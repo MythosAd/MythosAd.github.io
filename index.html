@@ -76,7 +76,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2018/07/29/测试文章/">spring frame下组件功能代码简析</a>
+      <a class="article-title" href="/2018/07/29/测试文章/">从java reflect到 spring cloujd组件功能代码简单解析（一)</a>
     </h1>
   
 
@@ -85,17 +85,19 @@
     <div class="article-entry" itemprop="articleBody">
       
         <p>Welcome to ycc’s blog</p>
-<p>这是一篇关于spring framwork 下组件的简单解析</p>
 <p>解析工具为 idea 2017.1.6</p>
 <p>材料 为</p>
 <figure class="highlight plain"><figcaption><span>xml</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependencyManagement&gt;</span><br><span class="line">    &lt;dependencies&gt;</span><br><span class="line">        &lt;dependency&gt;</span><br><span class="line">            &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;spring-cloud-dependencies&lt;/artifactId&gt;</span><br><span class="line">            &lt;version&gt;Finchley.RELEASE&lt;/version&gt;</span><br><span class="line">            &lt;type&gt;pom&lt;/type&gt;</span><br><span class="line">            &lt;scope&gt;import&lt;/scope&gt;</span><br><span class="line">        &lt;/dependency&gt;</span><br><span class="line">    &lt;/dependencies&gt;</span><br><span class="line">&lt;/dependencyManagement&gt;</span><br><span class="line">&lt;dependencies&gt;</span><br><span class="line">    &lt;dependency&gt;</span><br><span class="line">        &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;</span><br><span class="line">        &lt;artifactId&gt;spring-cloud-starter-config&lt;/artifactId&gt;</span><br><span class="line">    &lt;/dependency&gt;</span><br><span class="line">    &lt;dependency&gt;</span><br><span class="line">        &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;</span><br><span class="line">        &lt;artifactId&gt;spring-cloud-starter-netflix-eureka-client&lt;/artifactId&gt;</span><br><span class="line">    &lt;/dependency&gt;</span><br><span class="line">&lt;/dependencies&gt;</span><br></pre></td></tr></table></figure>
-<h6 id="并用maven下载src文件，用于debug源码"><a href="#并用maven下载src文件，用于debug源码" class="headerlink" title="并用maven下载src文件，用于debug源码"></a>并用maven下载src文件，用于debug源码</h6><h3 id="前言-个人猜想"><a href="#前言-个人猜想" class="headerlink" title="前言-个人猜想"></a>前言-个人猜想</h3><p>spring 核心是其实利用了java的动态反射机制-程序运行时，允许改变程序结构或变量类型.java程序可以加载一个运行才得知名称class.c++虽然也有反射机制，但是却不是动态加载，查阅一些不专业的技术博客，大多实现的c++的“动态反射”-建立一个hashmap，建立类名-函数地址映射。每次更新类，都需要重新编译.这应该是远不及java的动态反射。</p>
-<p>–实现原理。java可以动态的将.class文件加载进内存<br>1，BootStrap ClassLoader：<br><figure class="highlight plain"><figcaption><span>xml</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">URL[] urls = sun.misc.Launcher.getBootstrapClassPath().getURLs();</span><br><span class="line"></span><br><span class="line">for (int i = 0; i &lt; urls.length; i++) &#123;</span><br><span class="line"></span><br><span class="line">	System.out.println(urls[i].toExternalForm());</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>Extension ClassLoader：称为扩展类加载器，负责加载Java的扩展类库，默认加载JAVA_HOME/jre/lib/ext/目下的所有jar。<br>App ClassLoader：称为系统类加载器，负责加载应用程序classpath目录下的所有jar和class文件。</p>
+<h6 id="并用maven下载src文件，用于debug源码"><a href="#并用maven下载src文件，用于debug源码" class="headerlink" title="并用maven下载src文件，用于debug源码"></a>并用maven下载src文件，用于debug源码</h6><h3 id="前言-个人猜想"><a href="#前言-个人猜想" class="headerlink" title="前言-个人猜想"></a>前言-个人猜想</h3><p>spring 核心是利用了java的动态反射机制.程序运行时，允许改变程序结构或变量类型.</p>
+<p>java程序可以加载一个运行才得知名称class</p>
+<p>c++虽然也有反射机制，但是却不是动态加载，查阅一些不专业的技术博客，大多实现的c++的“动态反射”-建立一个hashmap，建立类名-函数地址映射,每次更新类，都需要重新编译，这应该是远不及java的动态反射。</p>
+<p>–实现原理。java可以动态的将.class文件加载进内存。</p>
+<p>1，BootStrap ClassLoader：<br><figure class="highlight plain"><figcaption><span>java</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">URL[] urls = sun.misc.Launcher.getBootstrapClassPath().getURLs();</span><br><span class="line"></span><br><span class="line">for (int i = 0; i &lt; urls.length; i++) &#123;</span><br><span class="line"></span><br><span class="line">	System.out.println(urls[i].toExternalForm());</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>Extension ClassLoader：称为扩展类加载器，负责加载Java的扩展类库，默认加载JAVA_HOME/jre/lib/ext/目下的所有jar。<br>App ClassLoader：称为系统类加载器，负责加载应用程序classpath目录下的所有jar和class文件。</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/29/测试文章/" data-id="cjk6bt4ws0001r4jyp0rpoe5o" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/29/测试文章/" data-id="cjk6dhzzi0001pkjy5fhi6rst" class="article-share-link">Share</a>
       
       
     </footer>
@@ -140,7 +142,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/29/hello-world/" data-id="cjk6bt4wn0000r4jyl9dxi9wc" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/29/hello-world/" data-id="cjk6dhzzb0000pkjyi205lxdb" class="article-share-link">Share</a>
       
       
     </footer>
@@ -181,7 +183,7 @@
       <ul>
         
           <li>
-            <a href="/2018/07/29/测试文章/">spring frame下组件功能代码简析</a>
+            <a href="/2018/07/29/测试文章/">从java reflect到 spring cloujd组件功能代码简单解析（一)</a>
           </li>
         
           <li>
