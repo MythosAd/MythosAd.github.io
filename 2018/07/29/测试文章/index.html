@@ -5,18 +5,18 @@
   
 
   
-  <title>从java reflect到 spring cloujd组件功能代码简单解析（一) | MythosAd所用博客</title>
+  <title>从java reflect到 spring cloud组件功能代码简单解析（一) | MythosAd所用博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="Welcome to ycc’s blog 解析工具为 idea 2017.1.6 材料 为 xml123456789101112131415161718192021&amp;lt;dependencyManagement&amp;gt;    &amp;lt;dependencies&amp;gt;        &amp;lt;dependency&amp;gt;            &amp;lt;groupId&amp;gt;org.springfr">
 <meta property="og:type" content="article">
-<meta property="og:title" content="从java reflect到 spring cloujd组件功能代码简单解析（一)">
+<meta property="og:title" content="从java reflect到 spring cloud组件功能代码简单解析（一)">
 <meta property="og:url" content="http://yoursite.com/2018/07/29/测试文章/index.html">
 <meta property="og:site_name" content="MythosAd所用博客">
 <meta property="og:description" content="Welcome to ycc’s blog 解析工具为 idea 2017.1.6 材料 为 xml123456789101112131415161718192021&amp;lt;dependencyManagement&amp;gt;    &amp;lt;dependencies&amp;gt;        &amp;lt;dependency&amp;gt;            &amp;lt;groupId&amp;gt;org.springfr">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2018-07-29T12:02:19.537Z">
+<meta property="og:updated_time" content="2018-07-29T12:09:54.931Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="从java reflect到 spring cloujd组件功能代码简单解析（一)">
+<meta name="twitter:title" content="从java reflect到 spring cloud组件功能代码简单解析（一)">
 <meta name="twitter:description" content="Welcome to ycc’s blog 解析工具为 idea 2017.1.6 材料 为 xml123456789101112131415161718192021&amp;lt;dependencyManagement&amp;gt;    &amp;lt;dependencies&amp;gt;        &amp;lt;dependency&amp;gt;            &amp;lt;groupId&amp;gt;org.springfr">
   
     <link rel="alternate" href="/atom.xml" title="MythosAd所用博客" type="application/atom+xml">
@@ -78,7 +78,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      从java reflect到 spring cloujd组件功能代码简单解析（一)
+      从java reflect到 spring cloud组件功能代码简单解析（一)
     </h1>
   
 
@@ -90,10 +90,10 @@
 <p>解析工具为 idea 2017.1.6</p>
 <p>材料 为</p>
 <figure class="highlight plain"><figcaption><span>xml</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependencyManagement&gt;</span><br><span class="line">    &lt;dependencies&gt;</span><br><span class="line">        &lt;dependency&gt;</span><br><span class="line">            &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;spring-cloud-dependencies&lt;/artifactId&gt;</span><br><span class="line">            &lt;version&gt;Finchley.RELEASE&lt;/version&gt;</span><br><span class="line">            &lt;type&gt;pom&lt;/type&gt;</span><br><span class="line">            &lt;scope&gt;import&lt;/scope&gt;</span><br><span class="line">        &lt;/dependency&gt;</span><br><span class="line">    &lt;/dependencies&gt;</span><br><span class="line">&lt;/dependencyManagement&gt;</span><br><span class="line">&lt;dependencies&gt;</span><br><span class="line">    &lt;dependency&gt;</span><br><span class="line">        &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;</span><br><span class="line">        &lt;artifactId&gt;spring-cloud-starter-config&lt;/artifactId&gt;</span><br><span class="line">    &lt;/dependency&gt;</span><br><span class="line">    &lt;dependency&gt;</span><br><span class="line">        &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;</span><br><span class="line">        &lt;artifactId&gt;spring-cloud-starter-netflix-eureka-client&lt;/artifactId&gt;</span><br><span class="line">    &lt;/dependency&gt;</span><br><span class="line">&lt;/dependencies&gt;</span><br></pre></td></tr></table></figure>
-<h6 id="并用maven下载src文件，用于debug源码"><a href="#并用maven下载src文件，用于debug源码" class="headerlink" title="并用maven下载src文件，用于debug源码"></a>并用maven下载src文件，用于debug源码</h6><h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>spring 核心是利用了java的动态反射机制.程序运行时，允许改变程序结构或变量类型.</p>
+<h6 id="右键选中pom下载src文件，用于debug源码"><a href="#右键选中pom下载src文件，用于debug源码" class="headerlink" title="右键选中pom下载src文件，用于debug源码"></a>右键选中pom下载src文件，用于debug源码</h6><h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>spring 核心是利用了java的动态反射机制.程序运行时，允许改变程序结构或变量类型.</p>
 <p>java程序可以加载一个运行才得知名称class</p>
 <p>c++虽然也有反射机制，但是却不是动态加载，查阅一些不专业的技术博客，大多实现的c++的“动态反射”-建立一个hashmap，建立类名-函数地址映射,每次更新类，都需要重新编译，这应该是远不及java的动态反射。</p>
-<p>–实现原理。java可以动态的将.class文件加载进内存。<br><blockquote><footer><strong>详解可以见此文-成富</strong><cite><a href="https://www.ibm.com/developerworks/cn/java/j-lo-classloader/index.html" target="_blank" rel="noopener">www.ibm.com/developerworks/cn/java/j-lo-classloader</a></cite></footer></blockquote></p>
+<blockquote><footer><strong>详解可以见此文-成富</strong><cite><a href="https://www.ibm.com/developerworks/cn/java/j-lo-classloader/index.html" target="_blank" rel="noopener">www.ibm.com/developerworks/cn/java/j-lo-classloader</a></cite></footer></blockquote>
 <p>BootStrap ClassLoader：称为启动类加载器，是Java类加载层次中最顶层的类加载器，负责加载JDK中的核心类库<br><figure class="highlight plain"><figcaption><span>java</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">URL[] urls = sun.misc.Launcher.getBootstrapClassPath().getURLs();</span><br><span class="line">for (int i = 0; i &lt; urls.length; i++) &#123;</span><br><span class="line"></span><br><span class="line">	System.out.println(urls[i].toExternalForm());</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>Extension ClassLoader：称为扩展类加载器，负责加载Java的扩展类库，默认加载JAVA_HOME/jre/lib/ext/目下的所有jar。<br>App ClassLoader：称为系统类加载器，负责加载应用程序classpath目录下的所有jar和class文件。</p>
 <p>ClassLoader使用的是双亲委托模型来搜索类的，每个ClassLoader实例都有一个父类加载器的引用（不是继承的关系，是一个包含的关系），虚拟机内置的类加载器（Bootstrap ClassLoader）本身没有父类加载器，但可以用作其它ClassLoader实例的的父类加载器。当一个ClassLoader实例需要加载某个类时，它会试图亲自搜索某个类之前，先把这个任务委托给它的父类加载器，这个过程是由上至下依次检查的，首先由最顶层的类加载器Bootstrap ClassLoader试图加载，如果没加载到，则把任务转交给Extension ClassLoader试图加载，如果也没加载到，则转交给App ClassLoader 进行加载，如果它也没有加载得到的话，则返回给委托的发起者，由它到指定的文件系统或网络等URL中加载该类。如果它们都没有加载到这个类时，则抛出ClassNotFoundException异常。否则将这个找到的类生成一个类的定义，并将它加载到内存当中，最后返回这个类在内存中的Class实例对象。</p>
 <figure class="highlight plain"><figcaption><span>java</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ApplicationContext context = new ClassPathXmlApplicationContext(&quot;classpath:applicationfile.xml&quot;);</span><br></pre></td></tr></table></figure>
@@ -104,7 +104,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/29/测试文章/" data-id="cjk6sua220001gwjyk548ta93" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/29/测试文章/" data-id="cjk6syowg0001w0jy0vphzm11" class="article-share-link">Share</a>
       
       
     </footer>
@@ -153,7 +153,7 @@
       <ul>
         
           <li>
-            <a href="/2018/07/29/测试文章/">从java reflect到 spring cloujd组件功能代码简单解析（一)</a>
+            <a href="/2018/07/29/测试文章/">从java reflect到 spring cloud组件功能代码简单解析（一)</a>
           </li>
         
           <li>
