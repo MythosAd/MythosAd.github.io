@@ -102,7 +102,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/29/测试文章/" data-id="cjk6wasrv0000gojydadf28cb" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/29/测试文章/" data-id="cjk6wkvz20001xkjy00pfpwxn" class="article-share-link">Share</a>
       
       
     </footer>
@@ -138,24 +138,25 @@
 <p>主要参考</p>
 <blockquote><footer><strong>https://zhangslob.github.io/2017/02/28/%E6%95%99%E4%BD%A0%E5%85%8D%E8%B4%B9%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%EF%BC%8CHexo-Github/</strong></footer></blockquote>
 <h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>github本身支持html格式展示。建立仓库时将 Repository name  设置 用户名.github.io 即可达成 https://用户名.github.io/ </p>
-<p>环境搭配原理-主要利用hexo将发布blog打包成html。且hexo自身脚手架cli命令集合npm,git发布功能。并且支持markdown文本本地预览。</p>
+<p>环境搭配原理-</p>
+<p>主要利用hexo将发布blog打包成html。且hexo自身cli命令集合npm,git发布功能。并且支持markdown文本本地预览。</p>
 <h4 id="生产blog环境需要"><a href="#生产blog环境需要" class="headerlink" title="生产blog环境需要"></a>生产blog环境需要</h4><p>1，申请github账户,建立仓库-用户名.github.io</p>
-<p>2,安装 git,node,hexo 注意三者安装都=默认配置环境命令-path</p>
+<p>2,安装 git,node,hexo 注意三者安装都默认配置环境变量</p>
 <p>3,安装git之后 使用ssh命令 生成ssh key，配置在github的key中</p>
-<p>4，使用 hexo init [博客名] 建立第一个hex博客目录</p>
-<p>5，进入source_posts 目录编写第一片博客。</p>
-<p>编写博客ide我使用的是 markdownpad2，它使用了渲染引擎 Webkit 并且和npm一样 内置了JS引擎V8。</p>
-<p>好处是，在livePreview可以左右观看实时效果。</p>
+<p>4，使用命令 hexo init [博客名], 建立第一个hex博客目录</p>
+<p>5，进入source_posts目录,编写第一片博客。</p>
+<p>ide我使用的是 markdownpad2,它使用了渲染引擎 Webkit 并且和npm一样内置了JS引擎V8—在livePreview可以左右观看实时效果。</p>
 <p>6，编写完以后，使用hexo generate 命令生成deploy_git目录下html,js.css文件</p>
 <p>7，使用hexo depoly可以直接发布至个人github。 或者使用hexo server 启动本地node.js服务查看预览效果。-访问链接localhost:4000</p>
-<h4 id="注意坑点"><a href="#注意坑点" class="headerlink" title="注意坑点"></a>注意坑点</h4><p>1，博客格式一定要正确,错误的文本符会导致generate报错，由于js解析报错，没有详细日志，无法查找原因。 例如我本人因为链接后缀”%}”写错，generate报错</p>
-<p>2，我是win10的系统。使用markdownpad2，livePreview面板出错。好在有官方直接的帮助链接,安装一个解决兼容性的sdk包awesomium_v1.6.6_sdk_win，且升级intel内置显卡驱动。问题得到解决</p>
-<h4 id="备注"><a href="#备注" class="headerlink" title="备注"></a>备注</h4><p>接触hex语法，有点类似emacs org-mode写东西。 不过最近肯定没什么时间弄了..以后再来弄</p>
+<h4 id="注意坑点"><a href="#注意坑点" class="headerlink" title="注意坑点"></a>注意坑点</h4><p>1，博客格式一定要正确,错误的文本符会导致generate报错，由于js解析报错，没有详细日志，无法查找原因。 例如我本人因为链接后缀”%}”写错，generate报错查找很久</p>
+<p>2，我是win10的系统。使用markdownpad2，livePreview面板出错</p>
+<p>好在有官方直接的帮助链接,安装一个解决兼容性的sdk包awesomium_v1.6.6_sdk_win，且升级intel内置显卡驱动。问题得到解决</p>
+<h4 id="备注"><a href="#备注" class="headerlink" title="备注"></a>备注</h4><p>接触hex语法，有点类似以前用emacs org-mode写东西。 不过最近没什么时间研究..以后补上</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/29/hexo+github搭建免费博客/" data-id="cjk6wass20001gojy18erjl6t" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/29/hexo+github搭建免费博客/" data-id="cjk6wkvyw0000xkjy7tx5jdxm" class="article-share-link">Share</a>
       
       
     </footer>
