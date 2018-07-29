@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>github 博客搭建简单指南 | MythosAd所用博客</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="浪费了一天的时间搭建了blog,写了第一篇blog。假如不把搭建过程记录下来。 主要参考 https://zhangslob.github.io/2017/02/28/%E6%95%99%E4%BD%A0%E5%85%8D%E8%B4%B9%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%EF%BC%8CHexo-Github/ 前言gi">
+<meta property="og:type" content="article">
+<meta property="og:title" content="github 博客搭建简单指南">
+<meta property="og:url" content="http://yoursite.com/2018/07/29/hexo+github搭建免费博客/index.html">
+<meta property="og:site_name" content="MythosAd所用博客">
+<meta property="og:description" content="浪费了一天的时间搭建了blog,写了第一篇blog。假如不把搭建过程记录下来。 主要参考 https://zhangslob.github.io/2017/02/28/%E6%95%99%E4%BD%A0%E5%85%8D%E8%B4%B9%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%EF%BC%8CHexo-Github/ 前言gi">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-07-29T13:34:10.321Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="github 博客搭建简单指南">
+<meta name="twitter:description" content="浪费了一天的时间搭建了blog,写了第一篇blog。假如不把搭建过程记录下来。 主要参考 https://zhangslob.github.io/2017/02/28/%E6%95%99%E4%BD%A0%E5%85%8D%E8%B4%B9%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%EF%BC%8CHexo-Github/ 前言gi">
+  
+    <link rel="alternate" href="/atom.xml" title="MythosAd所用博客" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">MythosAd所用博客</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-hexo+github搭建免费博客" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/07/29/hexo+github搭建免费博客/" class="article-date">
+  <time datetime="2018-07-29T00:10:25.271Z" itemprop="datePublished">2018-07-29</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      github 博客搭建简单指南
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>浪费了一天的时间搭建了blog,写了第一篇blog。假如不把搭建过程记录下来。</p>
+<p>主要参考</p>
+<blockquote><footer><strong>https://zhangslob.github.io/2017/02/28/%E6%95%99%E4%BD%A0%E5%85%8D%E8%B4%B9%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%EF%BC%8CHexo-Github/</strong></footer></blockquote>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>github本身支持html格式展示。建立仓库时将 Repository name  设置 用户名.github.io 即可达成 https://用户名.github.io/ </p>
+<p>环境搭配原理-主要利用hexo将发布blog打包成html。且hexo自身脚手架cli命令集合npm,git发布功能。并且支持markdown文本本地预览。</p>
+<h4 id="生产blog环境需要"><a href="#生产blog环境需要" class="headerlink" title="生产blog环境需要"></a>生产blog环境需要</h4><p>1，申请github账户,建立仓库-用户名.github.io</p>
+<p>2,安装 git,node,hexo 注意三者安装都=默认配置环境命令-path</p>
+<p>3,安装git之后 使用ssh命令 生成ssh key，配置在github的key中</p>
+<p>4，使用 hexo init [博客名] 建立第一个hex博客目录</p>
+<p>5，进入source_posts 目录编写第一片博客。</p>
+<p>编写博客ide我使用的是 markdownpad2，它使用了渲染引擎 Webkit 并且和npm一样 内置了JS引擎V8。</p>
+<p>好处是，在livePreview可以左右观看实时效果。</p>
+<p>6，编写完以后，使用hexo generate 命令生成deploy_git目录下html,js.css文件</p>
+<p>7，使用hexo depoly可以直接发布至个人github。 或者使用hexo server 启动本地node.js服务查看预览效果。-访问链接localhost:4000</p>
+<h4 id="注意坑点"><a href="#注意坑点" class="headerlink" title="注意坑点"></a>注意坑点</h4><p>1，博客格式一定要正确,错误的文本符会导致generate报错，由于js解析报错，没有详细日志，无法查找原因。 例如我本人因为链接后缀”%}”写错，generate报错</p>
+<p>2，我是win10的系统。使用markdownpad2，livePreview面板出错。好在有官方直接的帮助链接,安装一个解决兼容性的sdk包awesomium_v1.6.6_sdk_win，且升级intel内置显卡驱动。问题得到解决</p>
+<h4 id="备注"><a href="#备注" class="headerlink" title="备注"></a>备注</h4><p>接触hex语法，有点类似emacs org-mode写东西。 不过最近肯定没什么时间弄了..以后再来弄</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/07/29/hexo+github搭建免费博客/" data-id="cjk6wass20001gojy18erjl6t" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/07/29/测试文章/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          从java reflect到 spring cloud组件功能代码简单解析（一)
+        
+      </div>
+    </a>
+  
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/07/29/测试文章/">从java reflect到 spring cloud组件功能代码简单解析（一)</a>
+          </li>
+        
+          <li>
+            <a href="/2018/07/29/hexo+github搭建免费博客/">github 博客搭建简单指南</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 ycc<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>
