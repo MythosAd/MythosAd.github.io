@@ -3,8 +3,8 @@ title: LLM推理的瘦身革命：少即是多，还是新的枷索？深入剖�
 date: 2025-08-14 17:11:42
 mathjax: true
 tags:
-    --技术
-    --Hexo
+ -技术
+ -Hexo
 ---
 ### **标题：LLM推理的“瘦身革命”：少即是多，还是新的枷索？——深入剖析GFPO算法及其数学原理**
 
@@ -20,7 +20,7 @@ tags:
 
 GRPO的目标是最大化一个代理目标函数，其核心是优势函数$A_i$的定义：
 $$
-A_{i} = \frac{R(q, o_i) - \text{mean}\{R(q, o_j)\}_{j=1}^G}{\text{std}\{R(q, o_j)\}_{j=1}^G}
+A_i = \frac{R(q, o_i) - \operatorname{mean}_{j=1}^G\{R(q, o_j)\}}{\operatorname{std}_{j=1}^G\{R(q, o_j)\}}
 $$
 其中，$R(q, o_i)$是响应$o_i$的总奖励，$G$是组内样本总数。这个公式巧妙地利用组内均值和标准差对奖励进行归一化，从而得到一个相对的“优势”分数。
 
