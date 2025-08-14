@@ -102,16 +102,3 @@ theme: landscape
 ## Docs: https://hexo.io/docs/one-command-deployment
 deploy:
   type: ''
-
-math:
-  engine: 'mathjax' # or 'katex'
-  mathjax:
-    src: https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js # MathJax 3 的 CDN
-    config:
-      # MathJax 的详细配置
-      tex:
-        inlineMath: [['$', '$'], ['\\(', '\\)']]
-        displayMath: [['$$', '$$'], ['\\[', '\\]']]
-  katex:
-    src: https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js
-    css: https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css

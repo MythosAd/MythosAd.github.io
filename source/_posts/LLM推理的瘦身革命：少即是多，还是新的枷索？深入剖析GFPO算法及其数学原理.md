@@ -88,3 +88,6 @@ GFPO无疑是LLM对齐领域一项巧妙且务实的工作。它以一种全新�
 然而，我们必须清醒地认识到，GFPO是一把双刃剑。它所注入的“偏见”在当前看来利大于弊，成功为臃肿的LLM推理实现了“瘦身”。但这种对部分经验的“选择性失明”，可能会成为模型通往更高级、更鲁棒通用智能的“新枷锁”。
 
 理解GFPO，不仅是学习一种新算法，更是引发我们对人与机器对齐方式的深刻反思：我们是该设计一个完美的奖励函数去引导它，还是该为它设定一个严格的“朋友圈”，让它在潜移默化中学会我们所期望的样子？GFPO，为后一种可能性打开了一扇引人深思的大门。
+---
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
