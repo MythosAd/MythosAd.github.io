@@ -1,6 +1,7 @@
 ---
 title: LLM推理的瘦身革命：少即是多，还是新的枷索？深入剖析GFPO算法及其数学原理
 date: 2025-08-14 17:11:42
+mathjax: true
 tags:
     --技术
     --Hexo
