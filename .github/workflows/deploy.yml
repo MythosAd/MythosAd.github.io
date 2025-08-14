@@ -35,11 +35,11 @@ jobs:
         run: npx hexo generate
 
       # 第五步：将生成的文件部署到 main 分支
-      - name: Deploy to main branch
+      - name: Deploy to master branch
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: main # 部署到 main 分支
-          publish_dir: ./public # Hexo 生成的网站放在 public 目录
-          user_name: 'github-actions[bot]' # 用机器人的名义提交
+          publish_branch: master # 部署到 master 分支
+          publish_dir: ./public
+          user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
