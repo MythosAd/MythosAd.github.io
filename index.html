@@ -183,6 +183,86 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
+    <article id="post-从理论断层到统一框架：LLM强化学习对齐算法深度研究（一）" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2025/08/14/%E4%BB%8E%E7%90%86%E8%AE%BA%E6%96%AD%E5%B1%82%E5%88%B0%E7%BB%9F%E4%B8%80%E6%A1%86%E6%9E%B6%EF%BC%9ALLM%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0%E5%AF%B9%E9%BD%90%E7%AE%97%E6%B3%95%E6%B7%B1%E5%BA%A6%E7%A0%94%E7%A9%B6%EF%BC%88%E4%B8%80%EF%BC%89/" class="article-date">
+  <time class="dt-published" datetime="2025-08-14T20:43:02.000Z" itemprop="datePublished">2025-08-14</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2025/08/14/%E4%BB%8E%E7%90%86%E8%AE%BA%E6%96%AD%E5%B1%82%E5%88%B0%E7%BB%9F%E4%B8%80%E6%A1%86%E6%9E%B6%EF%BC%9ALLM%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0%E5%AF%B9%E9%BD%90%E7%AE%97%E6%B3%95%E6%B7%B1%E5%BA%A6%E7%A0%94%E7%A9%B6%EF%BC%88%E4%B8%80%EF%BC%89/">从理论断层到统一框架：LLM强化学习对齐算法深度研究（一）</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="好的，遵照您的指示，我将把我们之间所有深刻的讨论，从第一性原理到前沿构想，系统性地、详尽地整理成一篇专业的研究纪要博客。这篇博客将严格遵循我们讨论的逻辑脉络，包含详细的数学推导和对每个环节的批判性审视。"><a href="#好的，遵照您的指示，我将把我们之间所有深刻的讨论，从第一性原理到前沿构想，系统性地、详尽地整理成一篇专业的研究纪要博客。这篇博客将严格遵循我们讨论的逻辑脉络，包含详细的数学推导和对每个环节的批判性审视。" class="headerlink" title="好的，遵照您的指示，我将把我们之间所有深刻的讨论，从第一性原理到前沿构想，系统性地、详尽地整理成一篇专业的研究纪要博客。这篇博客将严格遵循我们讨论的逻辑脉络，包含详细的数学推导和对每个环节的批判性审视。"></a>好的，遵照您的指示，我将把我们之间所有深刻的讨论，从第一性原理到前沿构想，系统性地、详尽地整理成一篇专业的研究纪要博客。这篇博客将严格遵循我们讨论的逻辑脉络，包含详细的数学推导和对每个环节的批判性审视。</h2><h3 id="博客标题：从理论断层到统一框架：LLM强化学习对齐算法深度研究纪要"><a href="#博客标题：从理论断层到统一框架：LLM强化学习对齐算法深度研究纪要" class="headerlink" title="博客标题：从理论断层到统一框架：LLM强化学习对齐算法深度研究纪要"></a><strong>博客标题：从理论断层到统一框架：LLM强化学习对齐算法深度研究纪要</strong></h3><h2 id="作者-杨诚操日期-2025年8月14日摘要-本文记录了一次关于大型语言模型（LLM）强化学习（RL）对齐算法的深度研讨。我们从一个基础性的矛盾出发——即在LLM这种非遍历性序列生成任务中，Token级重要性采样的理论不自洽性。以此为起点，我们系统性地重演了从策略梯度第一性原理到现代实用算法（如PPO-GRPO）的推导路径，并揭示了其中为了实践可行性而做出的关键妥协，如序列级重要性采样（IS）的引入及其内在的方差-偏差困境。我们深入剖析了GRPO等算法存在的长度与难度偏差，并审视了DAPO和CISPO等前沿工作如何从工程和理论层面修复这些缺陷。最后，基于本次研讨的洞察，我们提出了一个旨在统一现有算法优点、并解决其核心痛点的综合性框架（SGS-CISPO），并对其数学完备性和实践潜力进行了严谨评估。"><a href="#作者-杨诚操日期-2025年8月14日摘要-本文记录了一次关于大型语言模型（LLM）强化学习（RL）对齐算法的深度研讨。我们从一个基础性的矛盾出发——即在LLM这种非遍历性序列生成任务中，Token级重要性采样的理论不自洽性。以此为起点，我们系统性地重演了从策略梯度第一性原理到现代实用算法（如PPO-GRPO）的推导路径，并揭示了其中为了实践可行性而做出的关键妥协，如序列级重要性采样（IS）的引入及其内在的方差-偏差困境。我们深入剖析了GRPO等算法存在的长度与难度偏差，并审视了DAPO和CISPO等前沿工作如何从工程和理论层面修复这些缺陷。最后，基于本次研讨的洞察，我们提出了一个旨在统一现有算法优点、并解决其核心痛点的综合性框架（SGS-CISPO），并对其数学完备性和实践潜力进行了严谨评估。" class="headerlink" title="作者: 杨诚操日期: 2025年8月14日摘要: 本文记录了一次关于大型语言模型（LLM）强化学习（RL）对齐算法的深度研讨。我们从一个基础性的矛盾出发——即在LLM这种非遍历性序列生成任务中，Token级重要性采样的理论不自洽性。以此为起点，我们系统性地重演了从策略梯度第一性原理到现代实用算法（如PPO, GRPO）的推导路径，并揭示了其中为了实践可行性而做出的关键妥协，如序列级重要性采样（IS）的引入及其内在的方差-偏差困境。我们深入剖析了GRPO等算法存在的长度与难度偏差，并审视了DAPO和CISPO等前沿工作如何从工程和理论层面修复这些缺陷。最后，基于本次研讨的洞察，我们提出了一个旨在统一现有算法优点、并解决其核心痛点的综合性框架（SGS-CISPO），并对其数学完备性和实践潜力进行了严谨评估。"></a><strong>作者</strong>: 杨诚操<br><strong>日期</strong>: 2025年8月14日<br><strong>摘要</strong>: 本文记录了一次关于大型语言模型（LLM）强化学习（RL）对齐算法的深度研讨。我们从一个基础性的矛盾出发——即在LLM这种非遍历性序列生成任务中，Token级重要性采样的理论不自洽性。以此为起点，我们系统性地重演了从策略梯度第一性原理到现代实用算法（如PPO, GRPO）的推导路径，并揭示了其中为了实践可行性而做出的关键妥协，如序列级重要性采样（IS）的引入及其内在的方差-偏差困境。我们深入剖析了GRPO等算法存在的长度与难度偏差，并审视了DAPO和CISPO等前沿工作如何从工程和理论层面修复这些缺陷。最后，基于本次研讨的洞察，我们提出了一个旨在统一现有算法优点、并解决其核心痛点的综合性框架（SGS-CISPO），并对其数学完备性和实践潜力进行了严谨评估。</h2><h3 id="第一幕：-foundational-Conflict-理论的优雅与现实的诅咒"><a href="#第一幕：-foundational-Conflict-理论的优雅与现实的诅咒" class="headerlink" title="第一幕： foundational Conflict - 理论的优雅与现实的诅咒"></a><strong>第一幕： foundational Conflict - 理论的优雅与现实的诅咒</strong></h3><p>一切LLM-RLHF的起点，都是最大化期望奖励这一简单而优美的目标：<br>$$<br>J(\theta) &#x3D; \mathbb{E}<em>{o \sim P</em>\theta(o)}[R(o)]<br>$$<br>其中，$P_\theta(o)$是策略模型$\pi_\theta$生成完整序列$o$的概率。通过应用<strong>Log-Derivative Trick</strong>，我们得到了著名的<strong>REINFORCE策略梯度</strong>：<br>$$<br>\nabla_\theta J(\theta) &#x3D; \mathbb{E}<em>{o \sim P</em>\theta(o)}[R(o) \nabla_\theta \log P_\theta(o)]<br>$$<br>然而，这个理论上完美的梯度在实践中存在两大缺陷：<strong>高方差</strong>和<strong>On-Policy数据低效</strong>。为了解决这两个问题，我们引入了两个标准工具：</p>
+<ol>
+<li><strong>基线（Baseline）</strong>: 引入优势函数 $\hat{A}(o) &#x3D; R(o) - b$ 来降低方差。</li>
+<li><strong>重要性采样（Importance Sampling, IS）</strong>: 允许使用旧策略$\pi_{\text{old}}$采样的数据，以提高效率。</li>
+</ol>
+<p>将两者结合，我们得到了理论上最完备的Off-Policy策略梯度：<br>$$<br>\nabla_\theta J(\theta) &#x3D; \mathbb{E}<em>{o \sim P</em>{\text{old}}(o)}\left[ \frac{P_\theta(o)}{P_{\text{old}}(o)} \cdot \hat{A}(o) \cdot \nabla_\theta \log P_\theta(o) \right]<br>$$<br>这里的核心是<strong>序列级重要性采样比例</strong>：<br>$$<br>R_{\text{sequence}}(o) &#x3D; \frac{P_\theta(o)}{P_{\text{old}}(o)} &#x3D; \prod_{t&#x3D;1}^{T} \frac{\pi_\theta(o_t|o_{&lt;t})}{\pi_{\text{old}}(o_t|o_{&lt;t})} &#x3D; \prod_{t&#x3D;1}^{T} \rho_t<br>$$<br><strong>至此，我们遭遇了第一个，也是最根本的理论-实践断裂点。</strong></p>
+<p>这个连乘积$R_{\text{sequence}}(o)$，虽然在数学上是唯一正确的权重，但在实践中是彻头彻尾的灾难。它的方差会随着序列长度$T$<strong>指数级爆炸</strong>，并导致毁灭性的<strong>数值不稳定性</strong>（梯度消失或爆炸）。理论的圣杯，在现实中却“有毒”。</p>
+<h3 id="第二幕：The-Age-of-Compromise-PPO-GRPO-GSPO的“原罪”"><a href="#第二幕：The-Age-of-Compromise-PPO-GRPO-GSPO的“原罪”" class="headerlink" title="第二幕：The Age of Compromise - PPO&#x2F;GRPO&#x2F;GSPO的“原罪”"></a><strong>第二幕：The Age of Compromise - PPO&#x2F;GRPO&#x2F;GSPO的“原罪”</strong></h3><p>为了让训练能够进行，现代算法必须对$R_{\text{sequence}}(o)$这个“有毒的圣杯”进行“解毒”。这催生了两种主流的妥协方案：</p>
+<p><strong>方案A：PPO&#x2F;GRPO的“理论混搭”</strong></p>
+<p>PPO及其变体GRPO，采取了一种极其务实但理论上不纯粹的方案。它们放弃了序列级的$R_{\text{sequence}}$，转而直接在<strong>Token级别</strong>上使用IS：<br>$$<br>L_{\text{PPO&#x2F;GRPO}} \propto - \sum_{i,t} \min\left( \rho_{i,t} \cdot \hat{A}<em>i, \text{clip}(\rho</em>{i,t}) \hat{A}_i \right)<br>$$<br>这里的<strong>核心“原罪”<strong>是，它将一个</strong>序列级</strong>的优势函数$\hat{A}<em>i$与一个<strong>Token级</strong>的重要性采样比例$\rho</em>{i,t}$直接相乘。这在“序列即动作”的理论框架下是不自洽的，它造成了理论上的断层，但其简单的形式和鲁棒的稳定性使其成为业界标准。</p>
+<p><strong>方案B：GSPO的“有偏妥协”</strong></p>
+<p>GSPO试图在理论上做得更自洽。它坚守“序列即动作”的原则，但为了解决$R_{\text{sequence}}$的方差问题，它采用了<strong>几何平均</strong>来替代：<br>$$<br>G(o) &#x3D; (R_{\text{sequence}}(o))^{1&#x2F;T} &#x3D; \left(\prod_{t&#x3D;1}^{T} \rho_t\right)^{1&#x2F;T}<br>$$<br><strong>这是第二个关键的妥协点</strong>。几何平均通过在对数空间取算术平均（$\log G(o) &#x3D; \frac{1}{T}\sum \log \rho_t$），成功地将指数增长的方差驯服为以$1&#x2F;T$速率下降的方差。</p>
+<ul>
+<li><strong>合理性</strong>: 保留了连乘的本质结构（最弱一环效应），且极大地稳定了训练。</li>
+<li><strong>不合理性</strong>: 引入了<strong>系统性的、向下的偏差</strong>。根据AM-GM不等式，几何平均总是小于等于算术平均，这意味着它会系统性地低估真实的IS权重，尤其是在新旧策略差异较大时。</li>
+</ul>
+<p>此外，早期的GRPO还存在两个严重的工程缺陷，后被DAPO等工作修正：</p>
+<ol>
+<li><strong>长度偏差</strong>: 由于对每个序列的损失进行平均（<code>1/|o_i|</code>），导致长序列中关键token的梯度信号被稀释。解决方案是采用<strong>Token级归一化</strong>（分母为总token数）。</li>
+<li><strong>难度偏差</strong>: 由于对优势函数按组进行标准化（<code>/std()</code>），导致全对&#x2F;全错（低方差）的组被赋予过高权重，且在std&#x3D;0时梯度爆炸。解决方案是<strong>动态采样</strong>，过滤掉这些组。</li>
+</ol>
+<h3 id="第三幕：The-Reformation-CISPO的“手术刀式”修复"><a href="#第三幕：The-Reformation-CISPO的“手术刀式”修复" class="headerlink" title="第三幕：The Reformation - CISPO的“手术刀式”修复"></a><strong>第三幕：The Reformation - CISPO的“手术刀式”修复</strong></h3><p>在PPO&#x2F;GRPO的框架下，<code>clip</code>机制本身也存在一个长期被忽视的缺陷。当一个关键token的IS比例$\rho_t$因其重要性而远超$1+\epsilon$时，PPO的损失项变为一个<strong>真正常量</strong>，其<strong>梯度瞬间归零</strong>。这扼杀了模型学习突破性创新的能力。</p>
+<p><strong>CISPO</strong>通过一个极其精妙的<code>stop_gradient</code>操作，完美地修复了这个问题。其目标函数形如：<br>$$<br>J_{\text{CISPO}}(\theta) \propto \mathbb{E} \left[ \text{sg}(\text{clip}(\rho_{i,t})) \cdot \hat{A}<em>{i,t} \cdot \log \pi</em>\theta(o_{i,t}|…) \right]<br>$$<br>其梯度为：<br>$$<br>\nabla_\theta J_{\text{CISPO}} \propto \text{clip}(\rho_{i,t}) \cdot \hat{A}<em>{i,t} \cdot \nabla</em>\theta \log \pi_\theta(o_{i,t}|…)<br>$$<br>在这里，<code>clip(rho)</code>不再是梯度的“开关”，而是一个<strong>无梯度的、有界的“缩放因子”</strong>。梯度永远不会被杀死，只是其大小被限制了。CISPO不是PPO的变体，而是一个<strong>方差有界的、稳定的REINFORCE算法</strong>，它同时解决了REINFORCE的梯度爆炸和PPO的梯度消失问题。</p>
+<h3 id="第四幕：The-Synthesis-一个统一、更优的框架构想"><a href="#第四幕：The-Synthesis-一个统一、更优的框架构想" class="headerlink" title="第四幕：The Synthesis - 一个统一、更优的框架构想"></a><strong>第四幕：The Synthesis - 一个统一、更优的框架构想</strong></h3><p>基于以上所有讨论，我们能否设计一个集大成、同时解决各自痛点的统一框架？我们的研讨提出了这样一个构想，它建立在几个核心原则之上：</p>
+<p><strong>原则一：地基——采纳DAPO的最佳实践。</strong></p>
+<ul>
+<li>默认使用<strong>Token级归一化</strong>消除长度偏差。</li>
+<li>默认使用<strong>动态采样</strong>消除难度偏差。</li>
+</ul>
+<p><strong>原则二：引擎——采用CISPO的稳定梯度机制。</strong></p>
+<ul>
+<li>抛弃PPO的<code>clip</code>，使用CISPO的<code>stop_gradient</code>机制，确保梯度信号的完整性和稳定性。</li>
+</ul>
+<p><strong>原则三：哲学——引入平滑梯度缩放（SGS），实现智能的正负优化。</strong><br>我们认识到，单纯的负向优化（如LoNSPo）存在学习效率低下和能力上限受限的问题。而单纯的正向优化又面临“过度模仿”和“熵坍塌”的风险。为此，我们设计了一个**平滑梯度缩放（Smooth Gradient Scaling, SGS）**机制。</p>
+<p>其核心是设计一个依赖于模型置信度的<strong>梯度缩放因子</strong> $S(P_\theta, \hat{A})$:<br>$$<br>S(P_\theta, \hat{A}) &#x3D;<br>\begin{cases}<br>1 &amp; \text{if } \hat{A} \le 0 \<br>1 - \sigma(k(P_\theta(o) - \tau)) &amp; \text{if } \hat{A} &gt; 0<br>\end{cases}<br>$$<br>这个机制在数学上可以证明：</p>
+<ol>
+<li><strong>对于负样本 ($\hat{A} \le 0$)</strong>: 它不施加任何抑制，执行完全的“进化选择”，有效淘汰错误。</li>
+<li><strong>对于正样本 ($\hat{A} &gt; 0$)</strong>: 它允许对低置信度（新探索）的样本进行充分学习，但随着模型置信度$P_\theta$的提升，会平滑地抑制梯度，从而在利用正样本的同时，<strong>从机制上防止了熵坍塌</strong>，避免了对已有知识的“过度学习”。</li>
+</ol>
+<p><strong>最终的统一损失函数框架 (SGS-CISPO)</strong>:<br>$$<br>L_{\text{SGS-CISPO}}(\theta) &#x3D; - \frac{1}{\sum|o_i|} \sum_{i,t} \left[ S_{i,t} \cdot \text{sg}(\text{clip}(\rho_{i,t})) \cdot \hat{A}<em>{i,t} \cdot \log \pi</em>\theta(o_{i,t}|…) \right]<br>$$<br>其中，$S_{i,t}$是应用于每个token的SGS缩放因子，$\hat{A}_{i,t}$可采用LoNSPo的留一法基线以获得更精确的信号。</p>
+<h3 id="结论：迈向更完备的对齐理论"><a href="#结论：迈向更完备的对齐理论" class="headerlink" title="结论：迈向更完备的对齐理论"></a><strong>结论：迈向更完备的对齐理论</strong></h3><p>我们的研讨从一个根本性的理论矛盾出发，层层剖析了现代LLM-RLHF算法在实践中做出的种种妥协及其代价。从PPO&#x2F;GRPO的理论断层，到GSPO的有偏近似，再到DAPO和CISPO的精细修复，我们看到了一条清晰的演进路径：<strong>算法正朝着更稳定、更高效、理论更完备的方向发展。</strong></p>
+<p>我们最终提出的SGS-CISPO框架，正是这一演进方向的逻辑延伸。它试图在一个统一的数学形式下，同时解决梯度稳定性（CISPO）、偏差（DAPO）和探索-利用的深层矛盾（SGS）。这是否是最终的答案尚不可知，但它为未来的研究指明了一条充满希望的、值得探索的道路。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2025/08/14/%E4%BB%8E%E7%90%86%E8%AE%BA%E6%96%AD%E5%B1%82%E5%88%B0%E7%BB%9F%E4%B8%80%E6%A1%86%E6%9E%B6%EF%BC%9ALLM%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0%E5%AF%B9%E9%BD%90%E7%AE%97%E6%B3%95%E6%B7%B1%E5%BA%A6%E7%A0%94%E7%A9%B6%EF%BC%88%E4%B8%80%EF%BC%89/" data-id="cmebe8m3k0003om6sch42fj8f" data-title="从理论断层到统一框架：LLM强化学习对齐算法深度研究（一）" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-LLM推理的瘦身革命：少即是多，还是新的枷索？深入剖析GFPO算法及其数学原理" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2025/08/14/LLM%E6%8E%A8%E7%90%86%E7%9A%84%E7%98%A6%E8%BA%AB%E9%9D%A9%E5%91%BD%EF%BC%9A%E5%B0%91%E5%8D%B3%E6%98%AF%E5%A4%9A%EF%BC%8C%E8%BF%98%E6%98%AF%E6%96%B0%E7%9A%84%E6%9E%B7%E7%B4%A2%EF%BC%9F%E6%B7%B1%E5%85%A5%E5%89%96%E6%9E%90GFPO%E7%AE%97%E6%B3%95%E5%8F%8A%E5%85%B6%E6%95%B0%E5%AD%A6%E5%8E%9F%E7%90%86/" class="article-date">
@@ -256,7 +336,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/08/14/LLM%E6%8E%A8%E7%90%86%E7%9A%84%E7%98%A6%E8%BA%AB%E9%9D%A9%E5%91%BD%EF%BC%9A%E5%B0%91%E5%8D%B3%E6%98%AF%E5%A4%9A%EF%BC%8C%E8%BF%98%E6%98%AF%E6%96%B0%E7%9A%84%E6%9E%B7%E7%B4%A2%EF%BC%9F%E6%B7%B1%E5%85%A5%E5%89%96%E6%9E%90GFPO%E7%AE%97%E6%B3%95%E5%8F%8A%E5%85%B6%E6%95%B0%E5%AD%A6%E5%8E%9F%E7%90%86/" data-id="cmebdozbw0000p06s790j1mha" data-title="LLM推理的瘦身革命：少即是多，还是新的枷索？深入剖析GFPO算法及其数学原理" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/08/14/LLM%E6%8E%A8%E7%90%86%E7%9A%84%E7%98%A6%E8%BA%AB%E9%9D%A9%E5%91%BD%EF%BC%9A%E5%B0%91%E5%8D%B3%E6%98%AF%E5%A4%9A%EF%BC%8C%E8%BF%98%E6%98%AF%E6%96%B0%E7%9A%84%E6%9E%B7%E7%B4%A2%EF%BC%9F%E6%B7%B1%E5%85%A5%E5%89%96%E6%9E%90GFPO%E7%AE%97%E6%B3%95%E5%8F%8A%E5%85%B6%E6%95%B0%E5%AD%A6%E5%8E%9F%E7%90%86/" data-id="cmebe8m3d0000om6sgk501ag6" data-title="LLM推理的瘦身革命：少即是多，还是新的枷索？深入剖析GFPO算法及其数学原理" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -273,7 +353,7 @@ mjx-container[display="true"] + br {
     <article id="post-hello-world" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2025/08/14/hello-world/" class="article-date">
-  <time class="dt-published" datetime="2025-08-14T12:31:21.790Z" itemprop="datePublished">2025-08-14</time>
+  <time class="dt-published" datetime="2025-08-14T12:46:37.265Z" itemprop="datePublished">2025-08-14</time>
 </a>
     
   </div>
@@ -309,7 +389,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/08/14/hello-world/" data-id="cmebdozc00001p06s5z2a95i6" data-title="Hello World" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/08/14/hello-world/" data-id="cmebe8m3h0001om6s6p3z7ukx" data-title="Hello World" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -364,6 +444,10 @@ mjx-container[display="true"] + br {
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2025/08/14/%E4%BB%8E%E7%90%86%E8%AE%BA%E6%96%AD%E5%B1%82%E5%88%B0%E7%BB%9F%E4%B8%80%E6%A1%86%E6%9E%B6%EF%BC%9ALLM%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0%E5%AF%B9%E9%BD%90%E7%AE%97%E6%B3%95%E6%B7%B1%E5%BA%A6%E7%A0%94%E7%A9%B6%EF%BC%88%E4%B8%80%EF%BC%89/">从理论断层到统一框架：LLM强化学习对齐算法深度研究（一）</a>
+          </li>
         
           <li>
             <a href="/2025/08/14/LLM%E6%8E%A8%E7%90%86%E7%9A%84%E7%98%A6%E8%BA%AB%E9%9D%A9%E5%91%BD%EF%BC%9A%E5%B0%91%E5%8D%B3%E6%98%AF%E5%A4%9A%EF%BC%8C%E8%BF%98%E6%98%AF%E6%96%B0%E7%9A%84%E6%9E%B7%E7%B4%A2%EF%BC%9F%E6%B7%B1%E5%85%A5%E5%89%96%E6%9E%90GFPO%E7%AE%97%E6%B3%95%E5%8F%8A%E5%85%B6%E6%95%B0%E5%AD%A6%E5%8E%9F%E7%90%86/">LLM推理的瘦身革命：少即是多，还是新的枷索？深入剖析GFPO算法及其数学原理</a>
