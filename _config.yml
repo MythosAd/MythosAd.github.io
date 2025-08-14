@@ -120,3 +120,10 @@ mathjax:
   extension_options: {}
     # you can put your extension options here
     # see http://docs.mathjax.org/en/latest/options/input/tex.html#tex-extension-options for more detail
+katex:
+  enable: true
+  # per_page: false 会在每个页面都加载 KaTeX 的 CSS
+  # per_page: true 则需要你在文章的 Front-matter 中单独开启
+  # 推荐设置为 false，除非你只有极少数文章需要公式
+  per_page: false
+  options: {} # KaTeX 的高级配置选项，一般留空即可
