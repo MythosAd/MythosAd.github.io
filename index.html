@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://example.com/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:locale" content="en_US">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main">
+  
+    <article id="post-LLM推理的瘦身革命：少即是多，还是新的枷索？深入剖析GFPO算法及其数学原理" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2025/08/14/LLM%E6%8E%A8%E7%90%86%E7%9A%84%E7%98%A6%E8%BA%AB%E9%9D%A9%E5%91%BD%EF%BC%9A%E5%B0%91%E5%8D%B3%E6%98%AF%E5%A4%9A%EF%BC%8C%E8%BF%98%E6%98%AF%E6%96%B0%E7%9A%84%E6%9E%B7%E7%B4%A2%EF%BC%9F%E6%B7%B1%E5%85%A5%E5%89%96%E6%9E%90GFPO%E7%AE%97%E6%B3%95%E5%8F%8A%E5%85%B6%E6%95%B0%E5%AD%A6%E5%8E%9F%E7%90%86/" class="article-date">
+  <time class="dt-published" datetime="2025-08-14T17:11:42.000Z" itemprop="datePublished">2025-08-14</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2025/08/14/LLM%E6%8E%A8%E7%90%86%E7%9A%84%E7%98%A6%E8%BA%AB%E9%9D%A9%E5%91%BD%EF%BC%9A%E5%B0%91%E5%8D%B3%E6%98%AF%E5%A4%9A%EF%BC%8C%E8%BF%98%E6%98%AF%E6%96%B0%E7%9A%84%E6%9E%B7%E7%B4%A2%EF%BC%9F%E6%B7%B1%E5%85%A5%E5%89%96%E6%9E%90GFPO%E7%AE%97%E6%B3%95%E5%8F%8A%E5%85%B6%E6%95%B0%E5%AD%A6%E5%8E%9F%E7%90%86/">LLM推理的瘦身革命：少即是多，还是新的枷索？深入剖析GFPO算法及其数学原理</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h3 id="标题：LLM推理的“瘦身革命”：少即是多，还是新的枷索？——深入剖析GFPO算法及其数学原理"><a href="#标题：LLM推理的“瘦身革命”：少即是多，还是新的枷索？——深入剖析GFPO算法及其数学原理" class="headerlink" title="标题：LLM推理的“瘦身革命”：少即是多，还是新的枷索？——深入剖析GFPO算法及其数学原理"></a><strong>标题：LLM推理的“瘦身革命”：少即是多，还是新的枷索？——深入剖析GFPO算法及其数学原理</strong></h3><p>在追求更强大、更聪明的语言模型（LLM）的道路上，我们常常陷入一个怪圈：模型在解决复杂推理问题时，似乎越来越“话痨”。它们生成的答案越来越长，虽然有时能换来准确率的提升，但更多时候，这些冗长的“思考过程”充满了重复、犹豫和无关紧要的填充物。这不仅拖慢了推理速度，也增加了我们对模型可控性的担忧。</p>
+<p>最近，一篇名为《Sample More to Think Less》的论文提出了一种名为<strong>GFPO (Group Filtered Policy Optimization)</strong> 的新方法，直指这一“长度膨胀”的痛点。它宣称能让模型在训练时“多采样”，从而在推理时“少思考”，实现了一场推理效率的“瘦身革命”。</p>
+<p>这听起来很美妙，但它真的如此完美吗？它是否只是用一种新的偏见替换了旧的问题？在这篇博客中，我们将以一名严谨研究者的视角，从核心原理到潜在风险，再到未来的可能性，对GFPO进行一次彻底的剖析。</p>
+<h4 id="一、问题的核心：GRPO的“内卷”与数学瓶颈"><a href="#一、问题的核心：GRPO的“内卷”与数学瓶颈" class="headerlink" title="一、问题的核心：GRPO的“内卷”与数学瓶颈"></a><strong>一、问题的核心：GRPO的“内卷”与数学瓶颈</strong></h4><p>要理解GFPO，我们必须先了解它的前辈——<strong>GRPO (Group Relative Policy Optimization)</strong>。GRPO是当前主流的强化学习对齐算法之一，它通过让模型为每个问题生成一组（Group）答案，并基于这组答案内部的相对好坏（奖励高低）来进行学习，从而摆脱了对独立价值模型的依赖。</p>
+<p>GRPO的目标是最大化一个代理目标函数，其核心是优势函数$A_i$的定义：<br>$$<br>A_i &#x3D; \frac{R(q, o_i) - \text{mean}{R(q, o_j)}<em>{j&#x3D;1}^G}{\text{std}{R(q, o_j)}</em>{j&#x3D;1}^G}<br>$$<br>其中，$R(q, o_i)$是响应$o_i$的总奖励，$G$是组内样本总数。这个公式巧妙地利用组内均值和标准差对奖励进行归一化，从而得到一个相对的“优势”分数。</p>
+<p>然而，这个设计有一个意想不到的副作用。在优化模型以获得更高奖励（例如，解题正确）的过程中，它往往会无意中鼓励更长的答案。因为一个详尽的、包含多种尝试的答案，更有可能“撞对”最终的正确解。这种机制导致了模型的“内卷”：为了提高正确率，不惜一切代价增加思考步骤，最终导致响应长度的失控。</p>
+<h4 id="二、GFPO的巧妙一击：从“奖励塑造”到“数据筛选”"><a href="#二、GFPO的巧妙一击：从“奖励塑造”到“数据筛选”" class="headerlink" title="二、GFPO的巧妙一击：从“奖励塑造”到“数据筛选”"></a><strong>二、GFPO的巧妙一击：从“奖励塑造”到“数据筛选”</strong></h4><p>GFPO的解决方案出人意料地简单。它在GRPO的基础上增加了一个看似微不足道却至关重要的步骤：<strong>过滤 (Filtering)</strong>。</p>
+<p>其工作流程如下：</p>
+<ol>
+<li><strong>采样更多 (Sample More)</strong>: 针对一个问题，不再只生成$G$个答案，而是生成更多，比如$G’$个（$G’ &gt; G$）。</li>
+<li><strong>设定标准 (Define Metric)</strong>: 设定一个我们关心的“好”答案的标准<code>metric(·)</code>，这个标准可以独立于最终的任务奖励$R$。论文中主要使用了两个标准：<strong>响应长度（越短越好）<strong>和</strong>Token效率（$R(o)&#x2F;\text{length}(o)$，越高越好）</strong>。</li>
+<li><strong>无情筛选 (Filter)</strong>: 根据<code>metric(·)</code>，从生成的$G’$个答案中，只挑选出最符合标准的前$k$个，构成精英子集$S$。</li>
+<li><strong>专注学习 (Focus &amp; Learn)</strong>: <strong>完全抛弃</strong>那些不属于$S$的答案，只在被选中的这$k$个“精英”答案内部进行GRPO式的相对学习。</li>
+</ol>
+<p><strong>这套机制的精髓在于，它将对“简洁性”的追求，从复杂的奖励函数设计中解耦出来，转化成了一个简单粗暴的“数据选择”问题。</strong></p>
+<p>数学上，这是通过一个<strong>掩码 (Mask)</strong> $m_i$ 实现的。GFPO修改了优势函数的计算方式：<br>$$<br>A_{i}^{(m)} &#x3D; \frac{R(q, o_i) - \mu_S}{\sigma_S} \cdot m_i<br>$$<br>其中：</p>
+<ul>
+<li>$m_i &#x3D; \mathbb{I}{o_i \in S}$，即如果$o_i$在精英子集$S$中，$m_i&#x3D;1$，否则$m_i&#x3D;0$。</li>
+<li>$\mu_S$和$\sigma_S$分别是<strong>精英子集$S$内部</strong>的奖励均值和标准差。</li>
+</ul>
+<p>对于被抛弃的样本，$m_i&#x3D;0$，因此它们的优势函数$A_{i}^{(m)}$被强制设为0。在策略梯度算法中，策略更新的梯度$\nabla_\theta J$正比于优势函数：<br>$$<br>\nabla_\theta J(\theta) \approx \mathbb{E} \left[ A^{(m)} \cdot \nabla_\theta \log \pi_\theta(o) \right]<br>$$<br>当优势函数$A^{(m)}$为0时，该样本对梯度的贡献也精确为0——它在参数更新中被彻底“无视”了。</p>
+<h4 id="三、深刻的质疑：这是优化还是“偏见注入”？"><a href="#三、深刻的质疑：这是优化还是“偏见注入”？" class="headerlink" title="三、深刻的质疑：这是优化还是“偏见注入”？"></a><strong>三、深刻的质疑：这是优化还是“偏见注入”？</strong></h4><p>GFPO在实验中取得了显著成功，它在大幅削减响应长度的同时，几乎没有损失准确率。但作为批判性的思考者，我们必须提出质疑：这种“成功”的代价是什么？</p>
+<p>我们的深度对话揭示了GFPO方法论中一个深刻的内在矛盾：<strong>它本质上是在系统性地丢弃大量负样本。</strong></p>
+<p>这引发了两个核心问题：</p>
+<ol>
+<li><p><strong>对RL逻辑的挑战</strong>：强化学习的核心是“试错”，即从成功和失败中共同学习。GFPO拒绝从它认为“不符合标准”的失败（甚至某些成功）案例中学习，这是否违背了RL的基本原则？</p>
+</li>
+<li><p><strong>策略空间的扭曲</strong>：GFPO的过滤行为，实际上抬高了“好”答案的基线（用$\mu_S$代替$\mu_G$）。一个在全局看起来还不错的答案，在“精英圈”里可能就成了差生，从而受到惩罚。这会推动模型的策略空间向一个被特定<code>metric</code>严重“扭曲”的区域收敛。</p>
+</li>
+</ol>
+<p>我们的结论是：<strong>GFPO并非一个纯粹的优化算法，而是一种强大的、隐式的“偏见注入”工具。</strong> 它将我们对“简洁性”的偏好，通过数据选择的方式，强行注入到模型的学习过程中。这种“扭曲”是有意为之的，其目标就是塑造一个在特定约束下表现更优的模型。</p>
+<h4 id="四、从修正到超越：GFPO范式的未来"><a href="#四、从修正到超越：GFPO范式的未来" class="headerlink" title="四、从修正到超越：GFPO范式的未来"></a><strong>四、从修正到超越：GFPO范式的未来</strong></h4><p>认识到GFPO的本质后，我们可以从两个方向探索其未来：</p>
+<p><strong>1. 如何修正其“粗暴”？</strong><br>GFPO的“硬截断”（$A^{(m)}&#x3D;0$）丢弃了太多信息。我们可以设计更“温柔”的修正方案：</p>
+<ul>
+<li><strong>软性惩罚</strong>: 对于被抛弃的样本$o_j \notin S$，不将优势设为0，而是给一个固定的负值$A_{j}^{(m)} &#x3D; -\lambda_{rej}$。这样既保留了负反馈信号，又明确了对不符合<code>metric</code>行为的惩罚。</li>
+<li><strong>分层学习</strong>: 对“精英圈”$S$和“圈外”$S^c$的样本使用不同的学习基准和目标。例如，圈内用$A_{i}^{(m)} &#x3D; \frac{R(q, o_i) - \mu_S}{\sigma_S}$，圈外用$A_{j}^{(m)} &#x3D; \frac{R(q, o_j) - \mu_G}{\sigma_G} - \delta$，从而充分利用所有样本信息。</li>
+<li><strong>退火机制</strong>: 在训练初期让模型自由探索（接近GRPO），后期再逐渐加强过滤偏见（接近GFPO），实现更稳定的学习。</li>
+</ul>
+<p><strong>2. 如何利用其“偏见”？</strong><br>既然GFPO是注入偏见的利器，它的应用就可以远不止于“瘦身”。</p>
+<ul>
+<li><strong>多目标优化</strong>: 我们可以设计一个融合了简洁性、事实性、安全性的复杂<code>metric</code>函数，用GFPO这一简单框架实现复杂的多目标对齐。</li>
+<li><strong>安全对齐</strong>: 使用安全分类器作为<code>metric</code>，GFPO可以强力推动模型规避有害内容的生成。</li>
+<li><strong>高质量偏好学习</strong>: 与DPO等方法结合，先用GFPO筛选出高质量的候选答案，再在这些“优等生”中进行细微的偏好学习，从而训练出更具辨别力的模型。</li>
+</ul>
+<h4 id="结论：一把双刃剑"><a href="#结论：一把双刃剑" class="headerlink" title="结论：一把双刃剑"></a><strong>结论：一把双刃剑</strong></h4><p>GFPO无疑是LLM对齐领域一项巧妙且务实的工作。它以一种全新的视角，将复杂的“奖励工程”问题转化为了更易于操作的“数据选择”问题，并取得了显著的工程效果。</p>
+<p>然而，我们必须清醒地认识到，GFPO是一把双刃剑。它所注入的“偏见”在当前看来利大于弊，成功为臃肿的LLM推理实现了“瘦身”。但这种对部分经验的“选择性失明”，可能会成为模型通往更高级、更鲁棒通用智能的“新枷锁”。</p>
+<p>理解GFPO，不仅是学习一种新算法，更是引发我们对人与机器对齐方式的深刻反思：我们是该设计一个完美的奖励函数去引导它，还是该为它设定一个严格的“朋友圈”，让它在潜移默化中学会我们所期望的样子？GFPO，为后一种可能性打开了一扇引人深思的大门。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2025/08/14/LLM%E6%8E%A8%E7%90%86%E7%9A%84%E7%98%A6%E8%BA%AB%E9%9D%A9%E5%91%BD%EF%BC%9A%E5%B0%91%E5%8D%B3%E6%98%AF%E5%A4%9A%EF%BC%8C%E8%BF%98%E6%98%AF%E6%96%B0%E7%9A%84%E6%9E%B7%E7%B4%A2%EF%BC%9F%E6%B7%B1%E5%85%A5%E5%89%96%E6%9E%90GFPO%E7%AE%97%E6%B3%95%E5%8F%8A%E5%85%B6%E6%95%B0%E5%AD%A6%E5%8E%9F%E7%90%86/" data-id="cmeb72znw0000nq6shf24347k" data-title="LLM推理的瘦身革命：少即是多，还是新的枷索？深入剖析GFPO算法及其数学原理" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%8A%80%E6%9C%AF-Hexo/" rel="tag">--技术 --Hexo</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-hello-world" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2025/08/14/hello-world/" class="article-date">
+  <time class="dt-published" datetime="2025-08-14T09:26:19.855Z" itemprop="datePublished">2025-08-14</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2025/08/14/hello-world/">Hello World</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2025/08/14/hello-world/" data-id="cmeb72zo10001nq6sfmna7hlc" data-title="Hello World" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8A%80%E6%9C%AF-Hexo/" rel="tag">--技术 --Hexo</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/%E6%8A%80%E6%9C%AF-Hexo/" style="font-size: 10px;">--技术 --Hexo</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/08/">August 2025</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2025/08/14/LLM%E6%8E%A8%E7%90%86%E7%9A%84%E7%98%A6%E8%BA%AB%E9%9D%A9%E5%91%BD%EF%BC%9A%E5%B0%91%E5%8D%B3%E6%98%AF%E5%A4%9A%EF%BC%8C%E8%BF%98%E6%98%AF%E6%96%B0%E7%9A%84%E6%9E%B7%E7%B4%A2%EF%BC%9F%E6%B7%B1%E5%85%A5%E5%89%96%E6%9E%90GFPO%E7%AE%97%E6%B3%95%E5%8F%8A%E5%85%B6%E6%95%B0%E5%AD%A6%E5%8E%9F%E7%90%86/">LLM推理的瘦身革命：少即是多，还是新的枷索？深入剖析GFPO算法及其数学原理</a>
+          </li>
+        
+          <li>
+            <a href="/2025/08/14/hello-world/">Hello World</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2025 John Doe<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
