@@ -104,26 +104,14 @@ deploy:
   type: ''
 
 math:
-  enable: false
+  engine: 'mathjax' # or 'katex'
   mathjax:
-    enable: true
+    src: https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js # MathJax 3 的 CDN
+    config:
+      # MathJax 的详细配置
+      tex:
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
   katex:
-    enable: false
-mathjax:
-  tags: none # or 'ams' or 'all'
-  single_dollars: true # enable single dollar signs as in-line math delimiters
-  cjk_width: 0.9 # relative CJK char width
-  normal_width: 0.6 # relative normal (monospace) width
-  append_css: true # add CSS to pages rendered by MathJax
-  every_page: false # if true, every page will be rendered by MathJax regardless the `mathjax` setting in Front-matter
-  packages: # extra packages to load
-  extension_options: {}
-    # you can put your extension options here
-    # see http://docs.mathjax.org/en/latest/options/input/tex.html#tex-extension-options for more detail
-katex:
-  enable: true
-  # per_page: false 会在每个页面都加载 KaTeX 的 CSS
-  # per_page: true 则需要你在文章的 Front-matter 中单独开启
-  # 推荐设置为 false，除非你只有极少数文章需要公式
-  per_page: false
-  options: {} # KaTeX 的高级配置选项，一般留空即可
+    src: https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js
+    css: https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css
