@@ -102,3 +102,10 @@ theme: landscape
 ## Docs: https://hexo.io/docs/one-command-deployment
 deploy:
   type: ''
+
+math:
+  enable: false
+  mathjax:
+    enable: false
+  katex:
+    enable: false
