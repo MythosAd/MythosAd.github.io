@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.33">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="杨诚操">
+<meta name="dcterms.date" content="2025-08-15">
+
+<title>LLM推理的“瘦身革命”：少即是多，还是新的枷索？——深入剖析GFPO算法及其数学原理 – Mythos</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-dfb324f25d9b1687192fa8be62ac8f9c.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Mythos</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://MythosAd.github.io"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">LLM推理的“瘦身革命”：少即是多，还是新的枷索？——深入剖析GFPO算法及其数学原理</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">news</div>
+                <div class="quarto-category">code</div>
+                <div class="quarto-category">analysis</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>杨诚操 </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">August 15, 2025</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<p>在追求更强大、更聪明的语言模型（LLM）的道路上，我们常常陷入一个怪圈：模型在解决复杂推理问题时，似乎越来越“话痨”。它们生成的答案越来越长，虽然有时能换来准确率的提升，但更多时候，这些冗长的“思考过程”充满了重复、犹豫和无关紧要的填充物。这不仅拖慢了推理速度，也增加了我们对模型可控性的担忧。</p>
+<p>最近，一篇名为《Sample More to Think Less》的论文提出了一种名为<strong>GFPO (Group Filtered Policy Optimization)</strong> 的新方法，直指这一“长度膨胀”的痛点。它宣称能让模型在训练时“多采样”，从而在推理时“少思考”，实现了一场推理效率的“瘦身革命”。</p>
+<p>这听起来很美妙，但它真的如此完美吗？它是否只是用一种新的偏见替换了旧的问题？在这篇博客中，我们将以一名严谨研究者的视角，从核心原理到潜在风险，再到未来的可能性，对GFPO进行一次彻底的剖析。</p>
+<section id="一问题的核心grpo的内卷与数学瓶颈" class="level4">
+<h4 class="anchored" data-anchor-id="一问题的核心grpo的内卷与数学瓶颈"><strong>一、问题的核心：GRPO的“内卷”与数学瓶颈</strong></h4>
+<p>要理解GFPO，我们必须先了解它的前辈——<strong>GRPO (Group Relative Policy Optimization)</strong>。GRPO是当前主流的强化学习对齐算法之一，它通过让模型为每个问题生成一组（Group）答案，并基于这组答案内部的相对好坏（奖励高低）来进行学习，从而摆脱了对独立价值模型的依赖。</p>
+<p>GRPO的目标是最大化一个代理目标函数，其核心是优势函数<span class="math inline">\(A_i\)</span>的定义： <span class="math display">\[
+A_i = \frac{R(q, o_i) - \operatorname{mean}_{j=1}^G\{R(q, o_j)\}}{\operatorname{std}_{j=1}^G\{R(q, o_j)\}}
+\]</span> 其中，<span class="math inline">\(R(q, o_i)\)</span>是响应<span class="math inline">\(o_i\)</span>的总奖励，<span class="math inline">\(G\)</span>是组内样本总数。这个公式巧妙地利用组内均值和标准差对奖励进行归一化，从而得到一个相对的“优势”分数。</p>
+<p>然而，这个设计有一个意想不到的副作用。在优化模型以获得更高奖励（例如，解题正确）的过程中，它往往会无意中鼓励更长的答案。因为一个详尽的、包含多种尝试的答案，更有可能“撞对”最终的正确解。这种机制导致了模型的“内卷”：为了提高正确率，不惜一切代价增加思考步骤，最终导致响应长度的失控。</p>
+</section>
+<section id="二gfpo的巧妙一击从奖励塑造到数据筛选" class="level4">
+<h4 class="anchored" data-anchor-id="二gfpo的巧妙一击从奖励塑造到数据筛选"><strong>二、GFPO的巧妙一击：从“奖励塑造”到“数据筛选”</strong></h4>
+<p>GFPO的解决方案出人意料地简单。它在GRPO的基础上增加了一个看似微不足道却至关重要的步骤：<strong>过滤 (Filtering)</strong>。</p>
+<p>其工作流程如下： 1. <strong>采样更多 (Sample More)</strong>: 针对一个问题，不再只生成<span class="math inline">\(G\)</span>个答案，而是生成更多，比如<span class="math inline">\(G'\)</span>个（<span class="math inline">\(G' &gt; G\)</span>）。 2. <strong>设定标准 (Define Metric)</strong>: 设定一个我们关心的“好”答案的标准<code>metric(·)</code>，这个标准可以独立于最终的任务奖励<span class="math inline">\(R\)</span>。论文中主要使用了两个标准：<strong>响应长度（越短越好）</strong>和<strong>Token效率（<span class="math inline">\(R(o)/\text{length}(o)\)</span>，越高越好）</strong>。 3. <strong>无情筛选 (Filter)</strong>: 根据<code>metric(·)</code>，从生成的<span class="math inline">\(G'\)</span>个答案中，只挑选出最符合标准的前<span class="math inline">\(k\)</span>个，构成精英子集<span class="math inline">\(S\)</span>。 4. <strong>专注学习 (Focus &amp; Learn)</strong>: <strong>完全抛弃</strong>那些不属于<span class="math inline">\(S\)</span>的答案，只在被选中的这<span class="math inline">\(k\)</span>个“精英”答案内部进行GRPO式的相对学习。</p>
+<p><strong>这套机制的精髓在于，它将对“简洁性”的追求，从复杂的奖励函数设计中解耦出来，转化成了一个简单粗暴的“数据选择”问题。</strong></p>
+<p>数学上，这是通过一个<strong>掩码 (Mask)</strong> <span class="math inline">\(m_i\)</span> 实现的。GFPO修改了优势函数的计算方式： <span class="math display">\[
+A_{i}^{(m)} = \frac{R(q, o_i) - \mu_S}{\sigma_S} \cdot m_i
+\]</span> 其中： * <span class="math inline">\(m_i = \mathbb{I}\{o_i \in S\}\)</span>，即如果<span class="math inline">\(o_i\)</span>在精英子集<span class="math inline">\(S\)</span>中，<span class="math inline">\(m_i=1\)</span>，否则<span class="math inline">\(m_i=0\)</span>。 * <span class="math inline">\(\mu_S\)</span>和<span class="math inline">\(\sigma_S\)</span>分别是<strong>精英子集<span class="math inline">\(S\)</span>内部</strong>的奖励均值和标准差。</p>
+<p>对于被抛弃的样本，<span class="math inline">\(m_i=0\)</span>，因此它们的优势函数<span class="math inline">\(A_{i}^{(m)}\)</span>被强制设为0。在策略梯度算法中，策略更新的梯度<span class="math inline">\(\nabla_\theta J\)</span>正比于优势函数： <span class="math display">\[
+\nabla_\theta J(\theta) \approx \mathbb{E} \left[ A^{(m)} \cdot \nabla_\theta \log \pi_\theta(o) \right]
+\]</span> 当优势函数<span class="math inline">\(A^{(m)}\)</span>为0时，该样本对梯度的贡献也精确为0——它在参数更新中被彻底“无视”了。</p>
+</section>
+<section id="三深刻的质疑这是优化还是偏见注入" class="level4">
+<h4 class="anchored" data-anchor-id="三深刻的质疑这是优化还是偏见注入"><strong>三、深刻的质疑：这是优化还是“偏见注入”？</strong></h4>
+<p>GFPO在实验中取得了显著成功，它在大幅削减响应长度的同时，几乎没有损失准确率。但作为批判性的思考者，我们必须提出质疑：这种“成功”的代价是什么？</p>
+<p>我们的深度对话揭示了GFPO方法论中一个深刻的内在矛盾：<strong>它本质上是在系统性地丢弃大量负样本。</strong></p>
+<p>这引发了两个核心问题： 1. <strong>对RL逻辑的挑战</strong>：强化学习的核心是“试错”，即从成功和失败中共同学习。GFPO拒绝从它认为“不符合标准”的失败（甚至某些成功）案例中学习，这是否违背了RL的基本原则？</p>
+<ol start="2" type="1">
+<li><strong>策略空间的扭曲</strong>：GFPO的过滤行为，实际上抬高了“好”答案的基线（用<span class="math inline">\(\mu_S\)</span>代替<span class="math inline">\(\mu_G\)</span>）。一个在全局看起来还不错的答案，在“精英圈”里可能就成了差生，从而受到惩罚。这会推动模型的策略空间向一个被特定<code>metric</code>严重“扭曲”的区域收敛。</li>
+</ol>
+<p>我们的结论是：<strong>GFPO并非一个纯粹的优化算法，而是一种强大的、隐式的“偏见注入”工具。</strong> 它将我们对“简洁性”的偏好，通过数据选择的方式，强行注入到模型的学习过程中。这种“扭曲”是有意为之的，其目标就是塑造一个在特定约束下表现更优的模型。</p>
+</section>
+<section id="四从修正到超越gfpo范式的未来" class="level4">
+<h4 class="anchored" data-anchor-id="四从修正到超越gfpo范式的未来"><strong>四、从修正到超越：GFPO范式的未来</strong></h4>
+<p>认识到GFPO的本质后，我们可以从两个方向探索其未来：</p>
+<p><strong>1. 如何修正其“粗暴”？</strong> GFPO的“硬截断”（<span class="math inline">\(A^{(m)}=0\)</span>）丢弃了太多信息。我们可以设计更“温柔”的修正方案： * <strong>软性惩罚</strong>: 对于被抛弃的样本<span class="math inline">\(o_j \notin S\)</span>，不将优势设为0，而是给一个固定的负值<span class="math inline">\(A_{j}^{(m)} = -\lambda_{rej}\)</span>。这样既保留了负反馈信号，又明确了对不符合<code>metric</code>行为的惩罚。 * <strong>分层学习</strong>: 对“精英圈”<span class="math inline">\(S\)</span>和“圈外”<span class="math inline">\(S^c\)</span>的样本使用不同的学习基准和目标。例如，圈内用<span class="math inline">\(A_{i}^{(m)} = \frac{R(q, o_i) - \mu_S}{\sigma_S}\)</span>，圈外用<span class="math inline">\(A_{j}^{(m)} = \frac{R(q, o_j) - \mu_G}{\sigma_G} - \delta\)</span>，从而充分利用所有样本信息。 * <strong>退火机制</strong>: 在训练初期让模型自由探索（接近GRPO），后期再逐渐加强过滤偏见（接近GFPO），实现更稳定的学习。</p>
+<p><strong>2. 如何利用其“偏见”？</strong> 既然GFPO是注入偏见的利器，它的应用就可以远不止于“瘦身”。 * <strong>多目标优化</strong>: 我们可以设计一个融合了简洁性、事实性、安全性的复杂<code>metric</code>函数，用GFPO这一简单框架实现复杂的多目标对齐。 * <strong>安全对齐</strong>: 使用安全分类器作为<code>metric</code>，GFPO可以强力推动模型规避有害内容的生成。 * <strong>高质量偏好学习</strong>: 与DPO等方法结合，先用GFPO筛选出高质量的候选答案，再在这些“优等生”中进行细微的偏好学习，从而训练出更具辨别力的模型。</p>
+</section>
+<section id="结论一把双刃剑" class="level4">
+<h4 class="anchored" data-anchor-id="结论一把双刃剑"><strong>结论：一把双刃剑</strong></h4>
+<p>GFPO无疑是LLM对齐领域一项巧妙且务实的工作。它以一种全新的视角，将复杂的“奖励工程”问题转化为了更易于操作的“数据选择”问题，并取得了显著的工程效果。</p>
+<p>然而，我们必须清醒地认识到，GFPO是一把双刃剑。它所注入的“偏见”在当前看来利大于弊，成功为臃肿的LLM推理实现了“瘦身”。但这种对部分经验的“选择性失明”，可能会成为模型通往更高级、更鲁棒通用智能的“新枷锁”。</p>
+<p>理解GFPO，不仅是学习一种新算法，更是引发我们对人与机器对齐方式的深刻反思：我们是该设计一个完美的奖励函数去引导它，还是该为它设定一个严格的“朋友圈”，让它在潜移默化中学会我们所期望的样子？GFPO，为后一种可能性打开了一扇引人深思的大门。</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/MythosAd\.github\.io\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

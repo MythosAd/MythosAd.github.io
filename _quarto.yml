@@ -1,0 +1,21 @@
+project:
+  type: website
+
+website:
+  title: "Mythos"
+  navbar:
+    right:
+      - about.qmd
+      - icon: github
+        href: https://MythosAd.github.io
+      - icon: twitter
+        href: https://twitter.com
+format:
+  html:
+    theme:
+      - cosmo
+      - brand
+    css: styles.css
+
+
+
