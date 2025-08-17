@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.33">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="杨诚操">
+<meta name="dcterms.date" content="2025-08-17">
+
+<title>深入剖析Deltaformer，探寻超越Transformer的计算新范式 – Mythos</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-dfb324f25d9b1687192fa8be62ac8f9c.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Mythos</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://MythosAd.github.io"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">深入剖析Deltaformer，探寻超越Transformer的计算新范式</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">news</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>杨诚操 </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">August 17, 2025</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<section id="摘要" class="level3">
+<h3 class="anchored" data-anchor-id="摘要"><strong>摘要</strong></h3>
+<p>介绍了一种名为Deltaformer的新型模型架构，其核心目标是结合Transformer的高度并行性与超越其<span class="math inline">\(TC^0\)</span>计算表达能力的更强性能。作者团队通过融合经典的Delta Rule（一种状态更新机制）与核技巧（Kernel Trick），并设计了一种高效的块并行（Chunk-wise）算法，使得模型在理论上达到了<span class="math inline">\(NC^1\)</span>复杂度类，从而能够解决Transformer难以处理的状态追踪和图连通性等问题。</p>
+<p>接下来，我将分步对文章中的核心概念、方法、理论和实验进行详细注解与分析。</p>
+<hr>
+</section>
+<section id="动机剖析-motivation-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="动机剖析-motivation-analysis"><strong>1. 动机剖析 (Motivation Analysis)</strong></h3>
+<p>文章的动机建立在四个环环相扣的论点上，逻辑清晰，直指当前大模型架构的核心局限。</p>
+<section id="表达性与并行性的内在矛盾" class="level4">
+<h4 class="anchored" data-anchor-id="表达性与并行性的内在矛盾"><strong>1.1 表达性与并行性的内在矛盾</strong></h4>
+<p>这是一个非常深刻的切入点，源于计算复杂性理论。</p>
+<ul>
+<li><strong>计算复杂性类 (Complexity Classes)</strong>: 为了理解这个矛盾，我们必须先厘清几个关键的复杂性类：
+<ul>
+<li><strong>P (Polynomial Time)</strong>: 可以在确定性图灵机上通过多项式时间解决的决策问题集合。这基本涵盖了所有我们认为“可计算”的问题。循环神经网络（RNNs），如LSTM，其计算过程是顺序的，属于P类问题。</li>
+<li><strong>NC (Nick’s Class)</strong>: 可以在多项式数量的处理器上，在多对数（polylogarithmic, <span class="math inline">\(\log^k(n)\)</span>）时间内解决的问题集合。<span class="math inline">\(NC\)</span>$代表了那些可以被高效<strong>并行化</strong>的问题。</li>
+<li><strong><span class="math inline">\(TC^0\)</span></strong>: NC的一个子类。它代表可以被一个<strong>常数深度</strong>、<strong>多项式大小</strong>、且包含<strong>阈值门（Threshold Gates）</strong>的电路解决的问题。标准Transformer的自注意力机制（Self-Attention）已被证明其计算能力等价于<span class="math inline">\(TC^0\)</span>。阈值门可以计算输入的加权和是否超过某个阈值，这与注意力中的加权求和与Softmax操作有直接关联。</li>
+</ul></li>
+<li><strong>核心矛盾</strong>: 作者指出，<span class="math inline">\(TC^0\)</span>的能力是有限的。例如，它无法有效解决需要多步推理或状态追踪的问题。而LSTM这类顺序模型虽然表达能力更强（理论上是图灵完备的），但其计算过程是<span class="math inline">\(t\)</span>依赖于<span class="math inline">\(t-1\)</span>，无法大规模并行，这在GPU时代是致命的。作者认为，在几乎完全并行的<span class="math inline">\(TC^0\)</span>（Transformer）和完全顺序的<span class="math inline">\(P\)</span>（LSTM）之间，存在着广阔的中间地带（如<span class="math inline">\(NC^1\)</span>, <span class="math inline">\(NC²\)</span>等），这些复杂性类既允许高度并行，又具备比<span class="math inline">\(TC^0\)</span>更强的表达能力。Deltaformer的目标就是探索这片区域。</li>
+</ul>
+</section>
+<section id="delta-rule的复苏" class="level4">
+<h4 class="anchored" data-anchor-id="delta-rule的复苏"><strong>1.2 Delta Rule的复苏</strong></h4>
+<ul>
+<li><p><strong>Delta Rule</strong>: 这并非一个新概念，其思想根源可追溯至上世纪80-90年代的“快速权重编程”（Fast Weight Programming）。其核心思想是，模型的“权重”或“状态”在处理序列时是动态演化的。每一次输入不仅仅是用来计算输出，也是用来<strong>修改</strong>模型自身的状态。其一般形式可以抽象为： <span class="math display">\[
+S_t = f(S_{t-1}, x_t)
+\]</span> 其中<span class="math inline">\(S_t\)</span>是<span class="math inline">\(t\)</span>时刻的状态，<span class="math inline">\(x_t\)</span>是<span class="math inline">\(t\)</span>时刻的输入。这与Transformer的注意力机制有本质区别：Transformer在处理一个序列时，其参数<span class="math inline">\(W_Q, W_K, W_V\)</span>是固定的；它通过位置编码和注意力矩阵来感知序列顺序，但没有一个随时间演化的“状态矩阵”。</p></li>
+<li><p><strong>并行化挑战</strong>: 传统的Delta Rule实现是递归的，因此难以在GPU上并行。作者引用了Yang et al.&nbsp;(2024) 的工作，该工作成功地将一类Delta Rule（DeltaNet）并行化，使其从理论走向实践，这是Deltaformer诞生的关键催化剂。</p></li>
+</ul>
+</section>
+<section id="架构融合" class="level4">
+<h4 class="anchored" data-anchor-id="架构融合"><strong>1.3 架构融合</strong></h4>
+<p>作者明确了Deltaformer的设计哲学：<strong>取长补短</strong>。 * <strong>Transformer</strong>: 强于长距离依赖建模和信息检索（得益于其全局的注意力感受野）。 * <strong>DeltaNet (<span class="math inline">\(NC^1\)</span>模型)</strong>: 强于状态追踪（State tracking），但可能受限于有限状态空间，长文记忆不如Transformer。 * <strong>Deltaformer</strong>: 旨在融合两者的优点，成为一个表现力全面超越Transformer的架构。</p>
+<hr>
+</section>
+</section>
+<section id="方法论与数学推导-methodology-mathematical-derivation" class="level3">
+<h3 class="anchored" data-anchor-id="方法论与数学推导-methodology-mathematical-derivation"><strong>2. 方法论与数学推导 (Methodology &amp; Mathematical Derivation)</strong></h3>
+<p>Deltaformer的核心方法是将Delta Rule与核技巧结合，并通过一个块状算法实现高效计算。</p>
+<section id="kernelized-delta-rule" class="level4">
+<h4 class="anchored" data-anchor-id="kernelized-delta-rule"><strong>2.1 Kernelized Delta Rule</strong></h4>
+<ul>
+<li><p><strong>核技巧 (Kernel Trick)</strong>: 核技巧允许我们在一个高维甚至无穷维的特征空间中进行计算，而无需显式地定义这个空间的映射<span class="math inline">\(\phi(\cdot)\)</span>。我们只需要定义核函数<span class="math inline">\(K(x, y) = \langle \phi(x), \phi(y) \rangle\)</span>，即两个向量在高维空间中的內积。</p></li>
+<li><p><strong>推导</strong>: 博客中的数学表述有些跳跃，我将尝试重构并推导一个更清晰的版本。让我们假设一个基础的Delta Rule状态更新，其状态<span class="math inline">\(W\)</span>是一个矩阵： <span class="math display">\[
+W_t = W_{t-1} + v_t k_t^T
+\]</span> 在引入核技巧后，所有向量都被映射到高维空间<span class="math inline">\(\phi(\cdot)\)</span>： <span class="math display">\[
+\Phi_t = \Phi_{t-1} + \phi(v_t) \phi(k_t)^T
+\]</span> 当需要用这个状态进行“读”操作时，我们用查询向量<span class="math inline">\(q_t\)</span>去查询： <span class="math display">\[
+y_t = \Phi_{t-1} \phi(q_t) = \left( \sum_{i=1}^{t-1} \phi(v_i) \phi(k_i)^T \right) \phi(q_t)
+\]</span> 根据线性代数，上式可以变为： <span class="math display">\[
+y_t = \sum_{i=1}^{t-1} \phi(v_i) \left( \phi(k_i)^T \phi(q_t) \right)
+\]</span> 此时，我们可以应用核函数<span class="math inline">\(K(k_i, q_t) = \phi(k_i)^T \phi(q_t)\)</span>来替换无穷维的內积： <span class="math display">\[
+y_t = \sum_{i=1}^{t-1} K(k_i, q_t) \phi(v_i)
+\]</span> 这个结果<span class="math inline">\(y_t\)</span>仍然是无穷维的。博客在这里的描述（“将<span class="math inline">\(\phi\)</span>和<span class="math inline">\(\Psi\)</span>都给消去了”）可能存在一定的模糊性。一个可能的解释是，最终的输出<span class="math inline">\(o_t\)</span>是通过另一次核化的方式计算的，例如<span class="math inline">\(o_t = \sum_j K(y_t, z_j) \alpha_j\)</span>，从而避免了无穷维向量的直接操作。</p></li>
+<li><p><strong>博客中的公式</strong>: 博客中呈现的读写公式更为复杂，暗示了一种更高级的更新规则，但其核心思想依然是利用核函数替换內积。作者选择<span class="math inline">\(softmax\)</span>作为核函数，即<span class="math inline">\(K(q, k) = \text{softmax}(q^T k)\)</span>，这巧妙地将该机制与Transformer的注意力形式统一起来。</p></li>
+</ul>
+</section>
+<section id="chunk-wise-algorithm-for-gpu-implementation" class="level4">
+<h4 class="anchored" data-anchor-id="chunk-wise-algorithm-for-gpu-implementation"><strong>2.2 Chunk-wise Algorithm for GPU Implementation</strong></h4>
+<p>这是Deltaformer能够高效训练的关键。其核心是计算一个随时间演化的矩阵的逆，即<span class="math inline">\(U_t = (I - \sum_{i=1}^t v_i k_i^T)^{-1}\)</span>。</p>
+<ul>
+<li><strong>问题</strong>: 直接计算<span class="math inline">\(U_t\)</span>需要<span class="math inline">\(O(t d^2)\)</span>的计算量和<span class="math inline">\(O(d^2)\)</span>的内存，并且是递归的，难以并行。</li>
+<li><strong>块状计算思想</strong>: 将长度为<span class="math inline">\(L\)</span>的序列划分为大小为<span class="math inline">\(B\)</span>的块（chunk）。我们希望能够基于前一个块的最终状态<span class="math inline">\(U_p\)</span>，高效地并行计算当前块内的状态<span class="math inline">\(U_c\)</span>。</li>
+<li><strong>数学推导</strong>: 让我们定义 <span class="math inline">\(A_t = \sum_{i=1}^t v_i k_i^T\)</span>。
+<ul>
+<li><p><span class="math inline">\(A_t = A_p + A_c\)</span>，其中<span class="math inline">\(A_p\)</span>是之前所有块的<span class="math inline">\(vk^T\)</span>之和，<span class="math inline">\(A_c\)</span>是当前块的<span class="math inline">\(vk^T\)</span>之和。</p></li>
+<li><p>目标是计算 <span class="math inline">\(U_t = (I - A_p - A_c)^{-1}\)</span>。</p></li>
+<li><p>这里我们可以使用<strong>Woodbury矩阵恒等式</strong>或其特例<strong>Sherman-Morrison公式</strong>。该恒等式描述了矩阵的逆在受到一个低秩更新时的变化： <span class="math display">\[
+(A + UCV)^{-1} = A^{-1} - A^{-1}U(C^{-1} + VA^{-1}U)^{-1}VA^{-1}
+\]</span></p></li>
+<li><p>我们将 <span class="math inline">\(I - A_p - A_c\)</span> 变形为 <span class="math inline">\((I - A_p) - A_c\)</span>。令<span class="math inline">\(B = I - A_p\)</span>，则<span class="math inline">\(B^{-1} = U_p\)</span>。我们要求$ (B - A_c)^{-1}$。</p></li>
+<li><p><span class="math inline">\(A_c\)</span>可以表示为<span class="math inline">\(V_c K_c^T\)</span>，其中<span class="math inline">\(V_c\)</span>和<span class="math inline">\(K_c\)</span>分别是当前块的<span class="math inline">\(v\)</span>和<span class="math inline">\(k\)</span>向量堆叠成的矩阵。</p></li>
+<li><p>应用Woodbury恒等式： <span class="math display">\[
+U_t = (B - V_c K_c^T)^{-1} = B^{-1} + B^{-1}V_c(I - K_c^T B^{-1} V_c)^{-1} K_c^T B^{-1}
+\]</span> 代入<span class="math inline">\(B^{-1} = U_p\)</span>： <span class="math display">\[
+U_t = U_p + U_p V_c (I - K_c^T U_p V_c)^{-1} K_c^T U_p
+\]</span> 这个公式允许我们从前一个块的状态<span class="math inline">\(U_p\)</span>和当前块的数据<span class="math inline">\((V_c, K_c)\)</span>来计算当前块的最终状态<span class="math inline">\(U_t\)</span>。其中，<span class="math inline">\(I - K_c^T U_p V_c\)</span>是一个<span class="math inline">\(B \times B\)</span>的小矩阵，其求逆成本较低。当前块内部的计算可以高度并行化。</p></li>
+<li><p><strong>关于博客中公式的评论</strong>: 博客中给出的更新公式 <span class="math inline">\(U_c = (I - A_c)^{-1} (I + A_c U_p)\)</span> 似乎与标准的Woodbury恒等式推导出的形式不同。这可能是一个简化或特定条件下的表述，也可能是原文笔误。标准的推导如上所示，它清晰地展示了如何从<span class="math inline">\(U_p\)</span>更新到<span class="math inline">\(U_t\)</span>。然而，无论具体公式形式如何，其核心思想是<strong>将对<span class="math inline">\(t \times t\)</span>大矩阵的依赖，转化为对<span class="math inline">\(d \times d\)</span>状态矩阵和<span class="math inline">\(B \times B\)</span>块内交互矩阵的操作</strong>。</p></li>
+</ul></li>
+<li><strong>复杂度分析</strong>: 作者给出的<span class="math inline">\(O(L/B \cdot (B^2 d + B d^2 + d^3))\)</span>是合理的。
+<ul>
+<li><span class="math inline">\(B^2 d\)</span>: 计算块内的<span class="math inline">\(K^T U_p V\)</span>等矩阵乘法。</li>
+<li><span class="math inline">\(B d^2\)</span>: 块内其他矩阵乘法。</li>
+<li><span class="math inline">\(d^3\)</span>: 每次块更新结束时，可能需要一个<span class="math inline">\(d \times d\)</span>的矩阵求逆（或类似操作）来稳定或更新状态。 这个复杂度允许模型以块为单位进行并行，实现了在GPU上的高效训练。</li>
+</ul></li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="理论分析-theoretical-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="理论分析-theoretical-analysis"><strong>3. 理论分析 (Theoretical Analysis)</strong></h3>
+<p>Deltaformer被证明能够达到<span class="math inline">\(NC^1\)</span>的表达能力。</p>
+<ul>
+<li><strong><span class="math inline">\(NC^1\)</span>的意义</strong>: <span class="math inline">\(NC^1\)</span>比<span class="math inline">\(TC^0\)</span>更强大。<span class="math inline">\(NC^1\)</span>能够解决而<span class="math inline">\(TC^0\)</span>无法解决的典型问题包括：
+<ul>
+<li><strong>奇偶校验 (Parity)</strong>: 判断输入二进制位中1的个数是奇数还是偶数。</li>
+<li><strong>有向图可达性 (Graph Reachability)</strong>: 判断图中两个节点之间是否存在路径。</li>
+<li><strong>置换组合 (Permutation Composition)</strong>: 如博客中提到的追踪n个元素的交换。</li>
+</ul></li>
+<li><strong>证明思路 (构造性证明)</strong>:
+<ol type="1">
+<li><strong>选择一个<span class="math inline">\(NC^1\)</span>完备问题</strong>: 作者选择了“追踪n个元素交换”这一任务。如果能证明Deltaformer可以解决这个问题，就证明了它的能力至少达到了<span class="math inline">\(NC^1\)</span>。</li>
+<li><strong>矩阵求逆与图可达性</strong>: Deltaformer的核心操作是<span class="math inline">\(U = (I - A)^{-1}\)</span>。这个操作与图论紧密相关。如果我们考虑<span class="math inline">\(A\)</span>为一个图的邻接矩阵，那么<span class="math inline">\((I-A)^{-1}\)</span>可以通过其诺依曼级数展开： <span class="math display">\[
+(I - A)^{-1} = I + A + A^2 + A^3 + \dots
+\]</span> <span class="math inline">\(A^k\)</span>的第<span class="math inline">\((i, j)\)</span>个元素表示从节点<span class="math inline">\(i\)</span>到节点<span class="math inline">\(j\)</span>长度为<span class="math inline">\(k\)</span>的路径数量。因此，<span class="math inline">\(\sum_{k=0}^{\infty} A^k\)</span>的第<span class="math inline">\((i, j)\)</span>个元素非零，当且仅当节点<span class="math inline">\(i\)</span>和<span class="math inline">\(j\)</span>之间存在路径。这直接对应了<strong>图的可达性问题</strong>。</li>
+<li><strong>结论</strong>: 由于矩阵求逆（在特定代数结构下）是<span class="math inline">\(NC\)</span>中的一个基本操作，且与图可达性等价，而图可达性是<span class="math inline">\(NC^1\)</span>的经典问题，因此包含该操作的Deltaformer天然具备了超越<span class="math inline">\(TC^0\)</span>的潜力。作者在论文中通过具体构造证明了这一点。</li>
+</ol></li>
+</ul>
+<hr>
+</section>
+<section id="实验验证与批判性评估" class="level3">
+<h3 class="anchored" data-anchor-id="实验验证与批判性评估"><strong>4. 实验验证与批判性评估</strong></h3>
+<section id="toy-task的意义" class="level4">
+<h4 class="anchored" data-anchor-id="toy-task的意义"><strong>4.1 Toy Task的意义</strong></h4>
+<p>作者选择在Toy Task上进行实验，这在模型理论研究中是非常严谨和必要的。这些任务（如元素交换、图连通性）被专门设计用来探测模型的特定计算能力。如果一个模型声称具备<span class="math inline">\(NC^1\)</span>的能力，它就<strong>必须</strong>能够解决这些任务。实验结果显示Deltaformer可以解决而Transformer不能，这为模型的理论主张提供了强有力的实证支持。</p>
+</section>
+<section id="批判性评估与潜在问题" class="level4">
+<h4 class="anchored" data-anchor-id="批判性评估与潜在问题"><strong>4.2 批判性评估与潜在问题</strong></h4>
+<p>作为一个研究者，我们需要审视该工作可能存在的局限和挑战：</p>
+<ol type="1">
+<li><strong>大规模语言任务的扩展性 (Scalability to large-scale tasks)</strong>: 这是最大的问题。在Toy Task上的成功并不能直接保证在真实、复杂的语言建模任务上也能取得优势。<span class="math inline">\(NC^1\)</span>能力（如计算图连通性）是否是提升语言理解和生成能力的关键？这仍然是一个开放性问题。模型的归纳偏置（inductive bias）是否与自然语言的内在结构完全匹配，有待大规模实验验证。</li>
+<li><strong>计算成本与效率</strong>: 尽管块状算法实现了并行，但<span class="math inline">\(d^3\)</span>的求逆操作成本很高。在标准Transformer中，<span class="math inline">\(d\)</span>（head dimension）通常是64或128。<span class="math inline">\(128^3\)</span>约等于200万，这是一个不小的计算开销，可能会限制模型的隐藏层维度或总参数量，从而影响其容量。与FlashAttention等高度优化的注意力实现相比，Deltaformer的实际训练速度和效率需要进行详细的基准测试。</li>
+<li><strong>数值稳定性 (Numerical Stability)</strong>: 矩阵求逆是一个对数值敏感的操作。如果矩阵<span class="math inline">\(I-A\)</span>是病态的（ill-conditioned）或接近奇异，求逆过程可能会导致巨大的数值误差，从而使训练崩溃。模型是否需要特殊的正则化手段、激活函数或者参数初始化策略来保证<span class="math inline">\(I-A\)</span>的良好性质？博客中没有提及这一点，但在实际应用中至关重要。</li>
+<li><strong>核函数的选择</strong>: 作者提到核函数的选择很重要。使用<span class="math inline">\(softmax\)</span>核是一个巧妙的设计，因为它与现有Transformer组件兼容。但这是否是最优选择？其他核函数（如线性核、多项式核、高斯核）是否会带来不同的性能和计算特性？这方面需要更多的消融实验。</li>
+</ol>
+</section>
+</section>
+<section id="结论" class="level3">
+<h3 class="anchored" data-anchor-id="结论"><strong>5. 结论</strong></h3>
+<p>该博客清晰地阐述了Deltaformer的核心思想、理论基础和实现路径。它精准地抓住了当前主流架构Transformer的理论局限（<span class="math inline">\(TC^0\)</span>），并从计算复杂性理论中寻找突破口，提出了一种更有潜力的<span class="math inline">\(NC^1\)</span>模型。</p>
+<p><strong>总结来说，这项工作是富有洞察力的，它将经典的计算理论与现代的深度学习架构设计相结合，逻辑严密，理论扎实。然而，其实用价值最终取决于其在大规模、真实世界任务上的表现，以及能否在计算成本和数值稳定性等工程挑战上找到令人满意的解决方案。</strong> 这确实是一块值得后来者继续挖掘的“美玉”。</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/MythosAd\.github\.io\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
