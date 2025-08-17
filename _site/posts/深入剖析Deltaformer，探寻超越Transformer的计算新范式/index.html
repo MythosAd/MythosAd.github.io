@@ -6,10 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Tristan O’Malley">
-<meta name="dcterms.date" content="2025-08-12">
+<meta name="author" content="杨诚操">
+<meta name="dcterms.date" content="2025-08-17">
 
-<title>Welcome To My Blog – Mythos</title>
+<title>Transformer计算能力等价于TC^0 – Mythos</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -70,6 +70,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="../../styles.css">
 </head>
@@ -116,7 +145,7 @@ ul.task-list li input[type="checkbox"] {
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">Welcome To My Blog</h1>
+      <h1 class="title">Transformer计算能力等价于<span class="math inline">\(TC^0\)</span></h1>
                                 <div class="quarto-categories">
                 <div class="quarto-category">news</div>
               </div>
@@ -129,14 +158,14 @@ ul.task-list li input[type="checkbox"] {
       <div>
       <div class="quarto-title-meta-heading">Author</div>
       <div class="quarto-title-meta-contents">
-               <p>Tristan O’Malley </p>
+               <p>杨诚操 </p>
             </div>
     </div>
       
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">August 12, 2025</p>
+        <p class="date">August 17, 2025</p>
       </div>
     </div>
     
@@ -155,11 +184,87 @@ ul.task-list li input[type="checkbox"] {
 
 
 
-<p>This is the first post in a Quarto blog. Welcome!</p>
-<p><img src="thumbnail.jpg" class="img-fluid"></p>
-<p>Since this post doesn’t specify an explicit <code>image</code>, the first image in the post will be used in the listing page of posts.</p>
+<p><strong>为什么标准自注意力机制的计算能力等价于<span class="math inline">\(TC^0\)</span></strong>，这意味着什么，以及这个结论是如何被证明的。</p>
+<p>我们将分三步来完成这个教学过程： 1. <strong>第一步：精确定义战场——什么是自注意力（Self-Attention）和<span class="math inline">\(TC^0\)</span>？</strong> 2. <strong>第二步：核心论证——如何用<span class="math inline">\(TC^0\)</span>电路构建一个自注意力层？</strong> 3. <strong>第三步：深刻启示——“等价于<span class="math inline">\(TC^0\)</span>”对我们意味着什么？</strong></p>
+<hr>
+<section id="第一步精确定义战场" class="level3">
+<h3 class="anchored" data-anchor-id="第一步精确定义战场"><strong>第一步：精确定义战场</strong></h3>
+<p>在证明两者等价之前，我们必须对它们有精确、无歧义的理解。</p>
+<section id="自注意力机制的数学本质" class="level4">
+<h4 class="anchored" data-anchor-id="自注意力机制的数学本质"><strong>1.1 自注意力机制的数学本质</strong></h4>
+<p>我们通常说的自注意力机制，其核心是<strong>缩放点积注意力 (Scaled Dot-Product Attention)</strong>。其数学公式为： <span class="math display">\[
+\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V
+\]</span> 其中，<span class="math inline">\(Q\)</span> (Query), <span class="math inline">\(K\)</span> (Key), <span class="math inline">\(V\)</span> (Value) 是输入序列<span class="math inline">\(X\)</span>经过线性变换得到的矩阵。假设输入序列长度为<span class="math inline">\(n\)</span>，嵌入维度为<span class="math inline">\(d_{model}\)</span>，注意力头的维度为<span class="math inline">\(d_k\)</span>，那么<span class="math inline">\(Q, K, V\)</span>都是<span class="math inline">\(n \times d_k\)</span>的矩阵。</p>
+<p>让我们把这个公式分解为一系列基础的算术运算： 1. <strong>矩阵乘法</strong>: <span class="math inline">\(QK^T\)</span> (计算注意力分数)。 2. <strong>逐元素缩放</strong>: 除以<span class="math inline">\(\sqrt{d_k}\)</span>。 3. <strong>Softmax函数</strong>: 对注意力分数进行归一化。Softmax本身包含： a. <strong>逐元素指数运算</strong>: <span class="math inline">\(\exp(\cdot)\)</span>。 b. <strong>沿行求和</strong>: <span class="math inline">\(\sum(\cdot)\)</span>。 c.&nbsp;<strong>逐元素除法</strong>: <span class="math inline">\((\cdot) / \sum(\cdot)\)</span>。 4. <strong>矩阵乘法</strong>: 将归一化后的分数矩阵与<span class="math inline">\(V\)</span>相乘。</p>
+<p>整个自注意力机制，本质上就是由这些有限的、固定的算术运算构成的序列。</p>
+</section>
+<section id="tc0一种强大的并行计算模型" class="level4">
+<h4 class="anchored" data-anchor-id="tc0一种强大的并行计算模型"><strong>1.2 <span class="math inline">\(TC^0\)</span>：一种强大的并行计算模型</strong></h4>
+<p><strong><span class="math inline">\(TC^0\)</span></strong> 是计算复杂性理论中的一个类别。为了理解它，我们需要拆解它的名字：</p>
+<ul>
+<li><p><strong>T (Threshold - 阈值)</strong>: 电路不仅包含基础的AND, OR, NOT门，更关键的是包含了<strong>阈值门 (Threshold Gate)</strong>。一个阈值门接收<span class="math inline">\(m\)</span>个二进制输入<span class="math inline">\(x_1, \dots, x_m\)</span>，每个输入有一个对应的整数权重<span class="math inline">\(w_1, \dots, w_m\)</span>。它还有一个整数阈值<span class="math inline">\(T\)</span>。其输出为1，当且仅当输入的加权和不小于阈值： <span class="math display">\[
+\text{THR}(x_1, \dots, x_m) = 1 \iff \sum_{i=1}^m w_i x_i \geq T
+\]</span> 否则输出为0。阈值门极其强大，一个门就可以完成多数表决（MAJ）、求和比较等复杂操作。</p></li>
+<li><p><strong>C (Constant - 常数)</strong>: 电路的<strong>深度 (Depth)</strong> 是一个常数，即<span class="math inline">\(O(1)\)</span>。深度是指从任何输入到最终输出所经过的最长路径上的门数量。<strong>常数深度意味着计算不依赖于输入规模<span class="math inline">\(n\)</span>的增长而增加串行步骤</strong>。这是<strong>大规模并行化</strong>的理论基础。</p></li>
+<li><p><strong>⁰ (指数为0)</strong>: 这是一个历史命名习惯的遗留，我们主要关注TC即可。电路的<strong>大小 (Size)</strong>，即总门数，是输入比特数的<strong>多项式函数</strong>，即<span class="math inline">\(poly(n)\)</span>。</p></li>
+</ul>
+<p><strong>总结一下<span class="math inline">\(TC^0\)</span>的画像</strong>：它是一个计算能力很强的并行计算模型。它可以在<strong>固定的、极浅的计算深度内</strong>，利用海量（但不是无限）的阈值门，完成复杂的计算任务。</p>
+<hr>
+</section>
+</section>
+<section id="第二步核心论证用tc0电路模拟自注意力" class="level3">
+<h3 class="anchored" data-anchor-id="第二步核心论证用tc0电路模拟自注意力"><strong>第二步：核心论证——用<span class="math inline">\(TC^0\)</span>电路模拟自注意力</strong></h3>
+<p>证明的关键在于，我们需要展示上述自注意力的所有算术运算，都可以在有限精度下，由一个<span class="math inline">\(TC^0\)</span>电路来实现。这里的“有限精度”非常重要，因为电路处理的是二进制位，我们需要将浮点数表示为定点数或某种二进制编码。</p>
+<p>我们来逐一构建：</p>
+<section id="基础算术运算的tc0实现" class="level4">
+<h4 class="anchored" data-anchor-id="基础算术运算的tc0实现"><strong>2.1 基础算术运算的<span class="math inline">\(TC^0\)</span>实现</strong></h4>
+<p>在计算理论中，已经证明了基础的算术运算（加、减、乘、除）对于有限精度的二进制数，都可以在<span class="math inline">\(TC^0\)</span>中完成。 * <strong>加法和乘法</strong>: 两个<span class="math inline">\(k\)</span>-bit数字的乘法和加法可以由深度为常数的电路完成。例如，乘法可以被分解为多个部分的和，而求和可以用一个深度为<span class="math inline">\(O(1)\)</span>的阈值门网络高效完成。 * <strong>除法</strong>: 稍微复杂，但同样可以通过牛顿-拉弗森迭代等数值方法进行多项式近似，最终用<span class="math inline">\(TC^0\)</span>电路实现。</p>
+<p><strong>结论1</strong>: 自注意力公式中所有基础的矩阵乘法、缩放、除法，都可以被<span class="math inline">\(TC^0\)</span>电路模块实现。</p>
+</section>
+<section id="softmax函数的tc0实现最关键的一步" class="level4">
+<h4 class="anchored" data-anchor-id="softmax函数的tc0实现最关键的一步"><strong>2.2 Softmax函数的<span class="math inline">\(TC^0\)</span>实现：最关键的一步</strong></h4>
+<p>Softmax中的指数函数<span class="math inline">\(exp(x)\)</span>和求和是核心难点。</p>
+<ul>
+<li><p><strong>模拟指数函数 <span class="math inline">\(exp(x)\)</span></strong>: 我们无法在电路中实现完美的<span class="math inline">\(exp(x)\)</span>。但是，我们可以用<strong>多项式逼近</strong>它。例如，使用泰勒级数展开： <span class="math display">\[
+e^x \approx 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + \dots + \frac{x^k}{k!}
+\]</span> 对于一个有限范围和精度的输入<span class="math inline">\(x\)</span>，我们总可以找到一个固定阶数<span class="math inline">\(k\)</span>的多项式，使其足够精确。多项式只包含乘法和加法，根据<strong>结论1</strong>，这完全可以在<span class="math inline">\(TC^0\)</span>中实现。电路的深度仅取决于这个固定阶数<span class="math inline">\(k\)</span>，而与序列长度<span class="math inline">\(n\)</span>无关，因此仍然是常数深度。</p></li>
+<li><p><strong>模拟求和 <span class="math inline">\(∑\)</span> 和归一化</strong>: <span class="math display">\[
+\text{softmax}(z_i) = \frac{e^{z_i}}{\sum_{j=1}^n e^{z_j}}
+\]</span> 分母的求和<span class="math inline">\(\sum_{j=1}^n\)</span>看起来是顺序的，但强大的<strong>阈值门</strong>再次发挥作用。计算<span class="math inline">\(n\)</span>个数的和可以在<span class="math inline">\(TC^0\)</span>中高效完成。一个巨大的阈值门网络可以在常数深度内计算出这个和（或者其足够精确的近似值）。最终，用近似的<span class="math inline">\(exp(z_i)\)</span>除以近似的<span class="math inline">\(\sum exp(z_j)\)</span>，整个Softmax操作也被一个<span class="math inline">\(TC^0\)</span>电路成功模拟。</p></li>
+</ul>
+</section>
+<section id="整合一个完整的tc0自注意力电路" class="level4">
+<h4 class="anchored" data-anchor-id="整合一个完整的tc0自注意力电路"><strong>2.3 整合：一个完整的<span class="math inline">\(TC^0\)</span>自注意力电路</strong></h4>
+<p>我们将上述模块组合起来： 1. <strong>输入层</strong>: 将浮点数输入（词嵌入）编码为固定长度的二进制串。 2. <strong>线性变换层</strong>: 实现<span class="math inline">\(XW_Q\)</span>, <span class="math inline">\(XW_K\)</span>, <span class="math inline">\(XW_V\)</span>的电路模块（基于<span class="math inline">\(TC^0\)</span>乘法和加法）。 3. <strong>注意力分数层</strong>: 实现<span class="math inline">\(QK^T\)</span>和缩放的电路模块。 4. <strong>Softmax层</strong>: 实现Softmax近似的电路模块。 5. <strong>输出层</strong>: 实现最终加权求和<span class="math inline">\((...)V\)</span>的电路模块。</p>
+<p>由于每个模块都是<span class="math inline">\(TC^0\)</span>的（常数深度，多项式大小），将它们顺序连接起来，总的电路深度仍然是常数（<span class="math inline">\(O(1) + O(1) + ... = O(1)\)</span>），总大小也是多项式。</p>
+<p>因此，我们成功地证明了：<strong>任何一个标准自注意力层的计算过程，都可以被一个<span class="math inline">\(TC^0\)</span>电路以任意给定的精度进行模拟。</strong> (这一结论的严格数学证明可以在相关学术论文中找到，如 William Merrill et al., 2021, “A Formal Hierarchy of RNN and Transformer Architectures”）。</p>
+<hr>
+</section>
+</section>
+<section id="第三步深刻启示等价于tc0到底意味着什么" class="level3">
+<h3 class="anchored" data-anchor-id="第三步深刻启示等价于tc0到底意味着什么"><strong>第三步：深刻启示——“等价于<span class="math inline">\(TC^0\)</span>”到底意味着什么？</strong></h3>
+<p>这个理论结论不是学术游戏，它深刻地揭示了Transformer的本质、优势和固有的“基因缺陷”。</p>
+<section id="优势大规模并行的理论基石" class="level4">
+<h4 class="anchored" data-anchor-id="优势大规模并行的理论基石"><strong>3.1 优势：大规模并行的理论基石</strong></h4>
+<p><span class="math inline">\(TC^0\)</span>的“常数深度”特性，完美解释了<strong>为什么Transformer能在GPU上如此成功</strong>。因为计算的逻辑深度是固定的，与序列长度<span class="math inline">\(n\)</span>无关，所以无论序列多长，理论上整个注意力计算都可以在一步（或常数步）并行操作中完成。这与RNN中<span class="math inline">\(t\)</span>时刻必须等待<span class="math inline">\(t-1\)</span>时刻完成计算的<span class="math inline">\(O(n)\)</span>深度形成了鲜明对比。GPU这种拥有数千个并行核心的硬件，正是为执行<span class="math inline">\(TC^0\)</span>这类计算而生的。</p>
+</section>
+<section id="局限无法逾越的计算天花板" class="level4">
+<h4 class="anchored" data-anchor-id="局限无法逾越的计算天花板"><strong>3.2 局限：无法逾越的计算天花板</strong></h4>
+<p>“没有免费的午餐”。获得大规模并行性的代价，就是被限制在<span class="math inline">\(TC^0\)</span>的表达能力内。有很多看似简单的问题，是<span class="math inline">\(TC^0\)</span><strong>无法解决</strong>的。</p>
+<ul>
+<li><p><strong>奇偶校验 (Parity)</strong>: 判断一个二进制输入中“1”的个数是奇数还是偶数。这个问题无法由<span class="math inline">\(TC^0\)</span>电路解决。这暗示Transformer在需要精确计数，尤其是对整体数量进行奇偶判断时会遇到困难。这可以推广到许多需要对输入进行精确聚合统计的任务。</p></li>
+<li><p><strong>有向图可达性 (Reachability)</strong>: 判断一个图中从节点A到节点B是否存在一条路径。这是一个典型的需要<strong>递归/迭代</strong>推理的问题（“我能到邻居，邻居能到它的邻居，……”），其计算深度与路径长度有关。<span class="math inline">\(TC^0\)</span>的常数深度无法处理这种依赖于输入的计算深度。这暗示Transformer在处理需要多步、环环相扣的逻辑推理链（<span class="math inline">\(A→B→C→D\)</span>）时存在理论困难。这就是为什么对于复杂问题，我们常常需要借助“思维链（Chain-of-Thought）”这种外部脚手架，诱导模型一步步地进行顺序推理，以弥补其并行架构在深度推理上的不足。</p></li>
+<li><p><strong>置换组合 (Permutation Composition)</strong>: 如Deltaformer论文中提到的追踪<span class="math inline">\(n\)</span>个元素的交换。这类任务需要精确追踪每个元素的位置变化，其内在的代数结构也超越了<span class="math inline">\(TC^0\)</span>的能力范围。</p></li>
+</ul>
+</section>
+<section id="结论" class="level4">
+<h4 class="anchored" data-anchor-id="结论"><strong>结论</strong></h4>
+<p><strong>Transformer的强大，源于它将语言建模这个看似复杂的任务，巧妙地用<span class="math inline">\(TC^0\)</span>这样一种高度并行的计算模型进行了拟合。它的成功，是算法与硬件（GPU）协同进化的典范。然而，它的局限也同样深刻地烙印在其<span class="math inline">\(TC^0\)</span>的基因中，使其在面对需要深度、顺序、迭代推理的任务时，显得力不从心。</strong></p>
+<p>理解了这一点，就能明白为什么会有像Deltaformer（引入<span class="math inline">\(NC¹\)</span>能力的矩阵求逆）这样的工作出现。它们的目标，正是在不完全牺牲并行性的前提下，挣脱<span class="math inline">\(TC^0\)</span>的枷锁，向着表达能力更强的计算层级攀登，从而构建出下一代更强大的语言模型。</p>
 
 
+</section>
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

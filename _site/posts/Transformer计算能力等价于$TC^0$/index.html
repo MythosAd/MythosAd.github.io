@@ -7,9 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="杨诚操">
-<meta name="dcterms.date" content="2025-08-15">
+<meta name="dcterms.date" content="2025-08-17">
 
-<title>从理论断层到统一框架：LLM强化学习对齐算法深度研究（一） – Mythos</title>
+<title>深入剖析Deltaformer，探寻超越Transformer的计算新范式 – Mythos</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -145,11 +145,9 @@ window.Quarto = {
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">从理论断层到统一框架：LLM强化学习对齐算法深度研究（一）</h1>
+      <h1 class="title">深入剖析Deltaformer，探寻超越Transformer的计算新范式</h1>
                                 <div class="quarto-categories">
                 <div class="quarto-category">news</div>
-                <div class="quarto-category">code</div>
-                <div class="quarto-category">analysis</div>
               </div>
                   </div>
   </div>
@@ -167,7 +165,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">August 15, 2025</p>
+        <p class="date">August 17, 2025</p>
       </div>
     </div>
     
@@ -186,72 +184,138 @@ window.Quarto = {
 
 
 
-<p>记录了一次关于大型语言模型（LLM）强化学习（RL）对齐算法的深度研讨。我们从一个基础性的矛盾出发——即在LLM这种非遍历性序列生成任务中，Token级重要性采样的理论不自洽性。以此为起点，我们系统性地重演了从策略梯度第一性原理到现代实用算法（如PPO, GRPO）的推导路径，并揭示了其中为了实践可行性而做出的关键妥协，如序列级重要性采样（IS）的引入及其内在的方差-偏差困境。我们深入剖析了GRPO等算法存在的长度与难度偏差，并审视了DAPO和CISPO等前沿工作如何从工程和理论层面修复这些缺陷。最后，基于本次研讨的洞察，我们提出了一个旨在统一现有算法优点、并解决其核心痛点的综合性框架（SGS-CISPO），并对其数学完备性和实践潜力进行了严谨评估。</p>
-<section id="第一幕-foundational-conflict---理论的优雅与现实的诅咒" class="level3">
-<h3 class="anchored" data-anchor-id="第一幕-foundational-conflict---理论的优雅与现实的诅咒"><strong>第一幕： foundational Conflict - 理论的优雅与现实的诅咒</strong></h3>
-<p>一切LLM-RLHF的起点，都是最大化期望奖励这一简单而优美的目标： <span class="math display">\[
-J(\theta) = \mathbb{E}_{o \sim P_\theta(o)}[R(o)]
-\]</span> 其中，<span class="math inline">\(P_\theta(o)\)</span>是策略模型<span class="math inline">\(\pi_\theta\)</span>生成完整序列<span class="math inline">\(o\)</span>的概率。通过应用<strong>Log-Derivative Trick</strong>，我们得到了著名的<strong>REINFORCE策略梯度</strong>： <span class="math display">\[
-\nabla_\theta J(\theta) = \mathbb{E}_{o \sim P_\theta(o)}[R(o) \nabla_\theta \log P_\theta(o)]
-\]</span> 然而，这个理论上完美的梯度在实践中存在两大缺陷：<strong>高方差</strong>和<strong>On-Policy数据低效</strong>。为了解决这两个问题，我们引入了两个标准工具：</p>
-<ol type="1">
-<li><strong>基线（Baseline）</strong>: 引入优势函数 <span class="math inline">\(\hat{A}(o) = R(o) - b\)</span> 来降低方差。</li>
-<li><strong>重要性采样（Importance Sampling, IS）</strong>: 允许使用旧策略<span class="math inline">\(\pi_{\text{old}}\)</span>采样的数据，以提高效率。</li>
-</ol>
-<p>将两者结合，我们得到了理论上最完备的Off-Policy策略梯度： <span class="math display">\[
-\nabla_\theta J(\theta) = \mathbb{E}_{o \sim P_{\text{old}}(o)}\left[ \frac{P_\theta(o)}{P_{\text{old}}(o)} \cdot \hat{A}(o) \cdot \nabla_\theta \log P_\theta(o) \right]
-\]</span> 这里的核心是<strong>序列级重要性采样比例</strong>： <span class="math display">\[
-R_{\text{sequence}}(o) = \frac{P_\theta(o)}{P_{\text{old}}(o)} = \prod_{t=1}^{T} \frac{\pi_\theta(o_t|o_{&lt;t})}{\pi_{\text{old}}(o_t|o_{&lt;t})} = \prod_{t=1}^{T} \rho_t
-\]</span> <strong>至此，我们遭遇了第一个，也是最根本的理论-实践断裂点。</strong></p>
-<p>这个连乘积<span class="math inline">\(R_{\text{sequence}}(o)\)</span>，虽然在数学上是唯一正确的权重，但在实践中是彻头彻尾的灾难。它的方差会随着序列长度<span class="math inline">\(T\)</span>指数级爆炸，并导致毁灭性的<strong>数值不稳定性</strong>（梯度消失或爆炸）。理论的圣杯，在现实中却“有毒”。</p>
+<section id="摘要" class="level3">
+<h3 class="anchored" data-anchor-id="摘要"><strong>摘要</strong></h3>
+<p>介绍了一种名为Deltaformer的新型模型架构，其核心目标是结合Transformer的高度并行性与超越其<span class="math inline">\(TC^0\)</span>计算表达能力的更强性能。作者团队通过融合经典的Delta Rule（一种状态更新机制）与核技巧（Kernel Trick），并设计了一种高效的块并行（Chunk-wise）算法，使得模型在理论上达到了<span class="math inline">\(NC^1\)</span>复杂度类，从而能够解决Transformer难以处理的状态追踪和图连通性等问题。</p>
+<p>接下来，我将分步对文章中的核心概念、方法、理论和实验进行详细注解与分析。</p>
+<hr>
 </section>
-<section id="第二幕the-age-of-compromise---ppogrpogspo的问题" class="level3">
-<h3 class="anchored" data-anchor-id="第二幕the-age-of-compromise---ppogrpogspo的问题"><strong>第二幕：The Age of Compromise - PPO/GRPO/GSPO的问题</strong></h3>
-<p>为了让训练能够进行，现代算法必须对<span class="math inline">\(R_{\text{sequence}}(o)\)</span>这个“有毒的圣杯”进行“解毒”。这催生了两种主流的妥协方案：</p>
-<p><strong>方案A：PPO/GRPO的“理论混搭”</strong></p>
-<p>PPO及其变体GRPO，采取了一种极其务实但理论上不纯粹的方案。它们放弃了序列级的<span class="math inline">\(R_{\text{sequence}}\)</span>，转而直接在<strong>Token级别</strong>上使用IS： <span class="math display">\[
-L_{\text{PPO/GRPO}} \propto - \sum_{i,t} \min\left( \rho_{i,t} \cdot \hat{A}_i, \text{clip}(\rho_{i,t}) \hat{A}_i \right)
-\]</span> 这里的核心问题是，它将一个序列级的优势函数<span class="math inline">\(\hat{A}_i\)</span>与一个<strong>Token级</strong>的重要性采样比例<span class="math inline">\(\rho_{i,t}\)</span>直接相乘。这在“序列即动作”的理论框架下是不自洽的，它造成了理论上的断层，但其简单的形式和鲁棒的稳定性使其成为业界标准。</p>
-<p><strong>方案B：GSPO的“有偏妥协”</strong></p>
-<p>GSPO试图在理论上做得更自洽。它坚守“序列即动作”的原则，但为了解决<span class="math inline">\(R_{\text{sequence}}\)</span>的方差问题，它采用了<strong>几何平均</strong>来替代： <span class="math display">\[
-G(o) = (R_{\text{sequence}}(o))^{1/T} = \left(\prod_{t=1}^{T} \rho_t\right)^{1/T}
-\]</span> <strong>这是第二个关键的妥协点</strong>。几何平均通过在对数空间取算术平均（<span class="math inline">\(\log G(o) = \frac{1}{T}\sum \log \rho_t\)</span>），成功地将指数增长的方差驯服为以<span class="math inline">\(1/T\)</span>速率下降的方差。</p>
+<section id="动机剖析-motivation-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="动机剖析-motivation-analysis"><strong>1. 动机剖析 (Motivation Analysis)</strong></h3>
+<p>文章的动机建立在四个环环相扣的论点上，逻辑清晰，直指当前大模型架构的核心局限。</p>
+<section id="表达性与并行性的内在矛盾" class="level4">
+<h4 class="anchored" data-anchor-id="表达性与并行性的内在矛盾"><strong>1.1 表达性与并行性的内在矛盾</strong></h4>
+<p>这是一个非常深刻的切入点，源于计算复杂性理论。</p>
 <ul>
-<li><strong>合理性</strong>: 保留了连乘的本质结构（最弱一环效应），且极大地稳定了训练。</li>
-<li><strong>不合理性</strong>: 引入了<strong>系统性的、向下的偏差</strong>。根据AM-GM不等式，几何平均总是小于等于算术平均，这意味着它会系统性地低估真实的IS权重，尤其是在新旧策略差异较大时。</li>
+<li><strong>计算复杂性类 (Complexity Classes)</strong>: 为了理解这个矛盾，我们必须先厘清几个关键的复杂性类：
+<ul>
+<li><strong>P (Polynomial Time)</strong>: 可以在确定性图灵机上通过多项式时间解决的决策问题集合。这基本涵盖了所有我们认为“可计算”的问题。循环神经网络（RNNs），如LSTM，其计算过程是顺序的，属于P类问题。</li>
+<li><strong>NC (Nick’s Class)</strong>: 可以在多项式数量的处理器上，在多对数（polylogarithmic, <span class="math inline">\(\log^k(n)\)</span>）时间内解决的问题集合。<span class="math inline">\(NC\)</span>代表了那些可以被高效<strong>并行化</strong>的问题。</li>
+<li><strong><span class="math inline">\(TC^0\)</span></strong>: NC的一个子类。它代表可以被一个<strong>常数深度</strong>、<strong>多项式大小</strong>、且包含<strong>阈值门（Threshold Gates）</strong>的电路解决的问题。标准Transformer的自注意力机制（Self-Attention）已被证明其计算能力等价于<span class="math inline">\(TC^0\)</span>。阈值门可以计算输入的加权和是否超过某个阈值，这与注意力中的加权求和与Softmax操作有直接关联。</li>
+</ul></li>
+<li><strong>核心矛盾</strong>: 作者指出，<span class="math inline">\(TC^0\)</span>的能力是有限的。例如，它无法有效解决需要多步推理或状态追踪的问题。而LSTM这类顺序模型虽然表达能力更强（理论上是图灵完备的），但其计算过程是<span class="math inline">\(t\)</span>依赖于<span class="math inline">\(t-1\)</span>，无法大规模并行，这在GPU时代是致命的。作者认为，在几乎完全并行的<span class="math inline">\(TC^0\)</span>（Transformer）和完全顺序的<span class="math inline">\(P\)</span>（LSTM）之间，存在着广阔的中间地带（如<span class="math inline">\(NC^1\)</span>, <span class="math inline">\(NC²\)</span>等），这些复杂性类既允许高度并行，又具备比<span class="math inline">\(TC^0\)</span>更强的表达能力。Deltaformer的目标就是探索这片区域。</li>
 </ul>
-<p>此外，早期的GRPO还存在两个严重的工程缺陷，后被DAPO等工作修正： 1. <strong>长度偏差</strong>: 由于对每个序列的损失进行平均（<span class="math inline">\(1/|o_i|\)</span>），导致长序列中关键token的梯度信号被稀释。解决方案是采用<strong>Token级归一化</strong>（分母为总token数）。 2. <strong>难度偏差</strong>: 由于对优势函数按组进行标准化（<span class="math inline">\(/std()\)</span>），导致全对/全错（低方差）的组被赋予过高权重，且在std=0时梯度爆炸。解决方案是<strong>动态采样</strong>，过滤掉这些组。</p>
 </section>
-<section id="第三幕the-reformation---cispo的手术刀式修复" class="level3">
-<h3 class="anchored" data-anchor-id="第三幕the-reformation---cispo的手术刀式修复"><strong>第三幕：The Reformation - CISPO的“手术刀式”修复</strong></h3>
-<p>在PPO/GRPO的框架下，<code>clip</code>机制本身也存在一个长期被忽视的缺陷。当一个关键token的IS比例<span class="math inline">\(\rho_t\)</span>因其重要性而远超<span class="math inline">\(1+\epsilon\)</span>时，PPO的损失项变为一个<strong>真正常量</strong>，其<strong>梯度瞬间归零</strong>。这扼杀了模型学习突破性创新的能力。</p>
-<p><strong>CISPO</strong>通过一个极其精妙的<code>stop_gradient</code>操作，完美地修复了这个问题。其目标函数形如： <span class="math display">\[
-J_{\text{CISPO}}(\theta) \propto \mathbb{E} \left[ \text{sg}(\text{clip}(\rho_{i,t})) \cdot \hat{A}_{i,t} \cdot \log \pi_\theta(o_{i,t}|...) \right]
-\]</span> 其梯度为： <span class="math display">\[
-\nabla_\theta J_{\text{CISPO}} \propto \text{clip}(\rho_{i,t}) \cdot \hat{A}_{i,t} \cdot \nabla_\theta \log \pi_\theta(o_{i,t}|...)
-\]</span> 在这里，<code>clip(rho)</code>不再是梯度的“开关”，而是一个<strong>无梯度的、有界的“缩放因子”</strong>。梯度永远不会被杀死，只是其大小被限制了。CISPO不是PPO的变体，而是一个<strong>方差有界的、稳定的REINFORCE算法</strong>，它同时解决了REINFORCE的梯度爆炸和PPO的梯度消失问题。</p>
+<section id="delta-rule的复苏" class="level4">
+<h4 class="anchored" data-anchor-id="delta-rule的复苏"><strong>1.2 Delta Rule的复苏</strong></h4>
+<ul>
+<li><p><strong>Delta Rule</strong>: 这并非一个新概念，其思想根源可追溯至上世纪80-90年代的“快速权重编程”（Fast Weight Programming）。其核心思想是，模型的“权重”或“状态”在处理序列时是动态演化的。每一次输入不仅仅是用来计算输出，也是用来<strong>修改</strong>模型自身的状态。其一般形式可以抽象为： <span class="math display">\[
+S_t = f(S_{t-1}, x_t)
+\]</span> 其中<span class="math inline">\(S_t\)</span>是<span class="math inline">\(t\)</span>时刻的状态，<span class="math inline">\(x_t\)</span>是<span class="math inline">\(t\)</span>时刻的输入。这与Transformer的注意力机制有本质区别：Transformer在处理一个序列时，其参数<span class="math inline">\(W_Q, W_K, W_V\)</span>是固定的；它通过位置编码和注意力矩阵来感知序列顺序，但没有一个随时间演化的“状态矩阵”。</p></li>
+<li><p><strong>并行化挑战</strong>: 传统的Delta Rule实现是递归的，因此难以在GPU上并行。作者引用了Yang et al.&nbsp;(2024) 的工作，该工作成功地将一类Delta Rule（DeltaNet）并行化，使其从理论走向实践，这是Deltaformer诞生的关键催化剂。</p></li>
+</ul>
 </section>
-<section id="第四幕the-synthesis---一个统一更优的框架构想" class="level3">
-<h3 class="anchored" data-anchor-id="第四幕the-synthesis---一个统一更优的框架构想"><strong>第四幕：The Synthesis - 一个统一、更优的框架构想</strong></h3>
-<p>基于以上所有讨论，我们能否设计一个集大成、同时解决各自痛点的统一框架？我们的研讨提出了这样一个构想，它建立在几个核心原则之上：</p>
-<p><strong>原则一：地基——采纳DAPO的最佳实践。</strong> * 默认使用<strong>Token级归一化</strong>消除长度偏差。 * 默认使用<strong>动态采样</strong>消除难度偏差。</p>
-<p><strong>原则二：引擎——采用CISPO的稳定梯度机制。</strong> * 抛弃PPO的<code>clip</code>，使用CISPO的<code>stop_gradient</code>机制，确保梯度信号的完整性和稳定性。</p>
-<p><strong>原则三：哲学——引入平滑梯度缩放（SGS），实现智能的正负优化。</strong> 我们认识到，单纯的负向优化（如LoNSPo）存在学习效率低下和能力上限受限的问题。而单纯的正向优化又面临“过度模仿”和“熵坍塌”的风险。为此，我们设计了一个<strong>平滑梯度缩放（Smooth Gradient Scaling, SGS）</strong>机制。</p>
-<p>其核心是设计一个依赖于模型置信度的<strong>梯度缩放因子</strong> <span class="math inline">\(S(P_\theta, \hat{A})\)</span>: <span class="math display">\[
-S(P_\theta, \hat{A}) =
-\begin{cases}
-1 &amp; \text{if } \hat{A} \le 0 \\
-1 - \sigma(k(P_\theta(o) - \tau)) &amp; \text{if } \hat{A} &gt; 0
-\end{cases}
-\]</span> 这个机制在数学上可以证明： 1. <strong>对于负样本 (<span class="math inline">\(\hat{A} \le 0\)</span>)</strong>: 它不施加任何抑制，执行完全的“进化选择”，有效淘汰错误。 2. <strong>对于正样本 (<span class="math inline">\(\hat{A} &gt; 0\)</span>)</strong>: 它允许对低置信度（新探索）的样本进行充分学习，但随着模型置信度<span class="math inline">\(P_\theta\)</span>的提升，会平滑地抑制梯度，从而在利用正样本的同时，<strong>从机制上防止了熵坍塌</strong>，避免了对已有知识的“过度学习”。</p>
-<p><strong>最终的统一损失函数框架 (SGS-CISPO)</strong>: <span class="math display">\[
-L_{\text{SGS-CISPO}}(\theta) = - \frac{1}{\sum|o_i|} \sum_{i,t} \left[ S_{i,t} \cdot \text{sg}(\text{clip}(\rho_{i,t})) \cdot \hat{A}_{i,t} \cdot \log \pi_\theta(o_{i,t}|...) \right]
-\]</span> 其中，<span class="math inline">\(S_{i,t}\)</span>是应用于每个token的SGS缩放因子，<span class="math inline">\(\hat{A}_{i,t}\)</span>可采用LoNSPo的留一法基线以获得更精确的信号。</p>
+<section id="架构融合" class="level4">
+<h4 class="anchored" data-anchor-id="架构融合"><strong>1.3 架构融合</strong></h4>
+<p>作者明确了Deltaformer的设计哲学：<strong>取长补短</strong>。 * <strong>Transformer</strong>: 强于长距离依赖建模和信息检索（得益于其全局的注意力感受野）。 * <strong>DeltaNet (<span class="math inline">\(NC^1\)</span>模型)</strong>: 强于状态追踪（State tracking），但可能受限于有限状态空间，长文记忆不如Transformer。 * <strong>Deltaformer</strong>: 旨在融合两者的优点，成为一个表现力全面超越Transformer的架构。</p>
+<hr>
 </section>
-<section id="结论迈向更完备的对齐理论" class="level3">
-<h3 class="anchored" data-anchor-id="结论迈向更完备的对齐理论"><strong>结论：迈向更完备的对齐理论</strong></h3>
-<p>我们的研讨从一个根本性的理论矛盾出发，层层剖析了现代LLM-RLHF算法在实践中做出的种种妥协及其代价。从PPO/GRPO的理论断层，到GSPO的有偏近似，再到DAPO和CISPO的精细修复，我们看到了一条清晰的演进路径：<strong>算法正朝着更稳定、更高效、理论更完备的方向发展。</strong></p>
-<p>我们最终提出的SGS-CISPO框架，正是这一演进方向的逻辑延伸。它试图在一个统一的数学形式下，同时解决梯度稳定性（CISPO）、偏差（DAPO）和探索-利用的深层矛盾（SGS）。这是否是最终的答案尚不可知，但它为未来的研究指明了一条充满希望的、值得探索的道路。</p>
+</section>
+<section id="方法论与数学推导-methodology-mathematical-derivation" class="level3">
+<h3 class="anchored" data-anchor-id="方法论与数学推导-methodology-mathematical-derivation"><strong>2. 方法论与数学推导 (Methodology &amp; Mathematical Derivation)</strong></h3>
+<p>Deltaformer的核心方法是将Delta Rule与核技巧结合，并通过一个块状算法实现高效计算。</p>
+<section id="kernelized-delta-rule" class="level4">
+<h4 class="anchored" data-anchor-id="kernelized-delta-rule"><strong>2.1 Kernelized Delta Rule</strong></h4>
+<ul>
+<li><p><strong>核技巧 (Kernel Trick)</strong>: 核技巧允许我们在一个高维甚至无穷维的特征空间中进行计算，而无需显式地定义这个空间的映射<span class="math inline">\(\phi(\cdot)\)</span>。我们只需要定义核函数<span class="math inline">\(K(x, y) = \langle \phi(x), \phi(y) \rangle\)</span>，即两个向量在高维空间中的內积。</p></li>
+<li><p><strong>推导</strong>: 论文中的数学表述有些跳跃，我将尝试重构并推导一个更清晰的版本。让我们假设一个基础的Delta Rule状态更新，其状态<span class="math inline">\(W\)</span>是一个矩阵： <span class="math display">\[
+W_t = W_{t-1} + v_t k_t^T
+\]</span> 在引入核技巧后，所有向量都被映射到高维空间<span class="math inline">\(\phi(\cdot)\)</span>： <span class="math display">\[
+\Phi_t = \Phi_{t-1} + \phi(v_t) \phi(k_t)^T
+\]</span> 当需要用这个状态进行“读”操作时，我们用查询向量<span class="math inline">\(q_t\)</span>去查询： <span class="math display">\[
+y_t = \Phi_{t-1} \phi(q_t) = \left( \sum_{i=1}^{t-1} \phi(v_i) \phi(k_i)^T \right) \phi(q_t)
+\]</span> 根据线性代数，上式可以变为： <span class="math display">\[
+y_t = \sum_{i=1}^{t-1} \phi(v_i) \left( \phi(k_i)^T \phi(q_t) \right)
+\]</span> 此时，我们可以应用核函数<span class="math inline">\(K(k_i, q_t) = \phi(k_i)^T \phi(q_t)\)</span>来替换无穷维的內积： <span class="math display">\[
+y_t = \sum_{i=1}^{t-1} K(k_i, q_t) \phi(v_i)
+\]</span> 这个结果<span class="math inline">\(y_t\)</span>仍然是无穷维的。论文在这里的描述（“将<span class="math inline">\(\phi\)</span>和<span class="math inline">\(\Psi\)</span>都给消去了”）可能存在一定的模糊性。一个可能的解释是，最终的输出<span class="math inline">\(o_t\)</span>是通过另一次核化的方式计算的，例如<span class="math inline">\(o_t = \sum_j K(y_t, z_j) \alpha_j\)</span>，从而避免了无穷维向量的直接操作。</p></li>
+<li><p><strong>论文中的公式</strong>: 论文中呈现的读写公式更为复杂，暗示了一种更高级的更新规则，但其核心思想依然是利用核函数替换內积。作者选择<span class="math inline">\(softmax\)</span>作为核函数，即<span class="math inline">\(K(q, k) = \text{softmax}(q^T k)\)</span>，这巧妙地将该机制与Transformer的注意力形式统一起来。</p></li>
+</ul>
+</section>
+<section id="chunk-wise-algorithm-for-gpu-implementation" class="level4">
+<h4 class="anchored" data-anchor-id="chunk-wise-algorithm-for-gpu-implementation"><strong>2.2 Chunk-wise Algorithm for GPU Implementation</strong></h4>
+<p>这是Deltaformer能够高效训练的关键。其核心是计算一个随时间演化的矩阵的逆，即<span class="math inline">\(U_t = (I - \sum_{i=1}^t v_i k_i^T)^{-1}\)</span>。</p>
+<ul>
+<li><strong>问题</strong>: 直接计算<span class="math inline">\(U_t\)</span>需要<span class="math inline">\(O(t d^2)\)</span>的计算量和<span class="math inline">\(O(d^2)\)</span>的内存，并且是递归的，难以并行。</li>
+<li><strong>块状计算思想</strong>: 将长度为<span class="math inline">\(L\)</span>的序列划分为大小为<span class="math inline">\(B\)</span>的块（chunk）。我们希望能够基于前一个块的最终状态<span class="math inline">\(U_p\)</span>，高效地并行计算当前块内的状态<span class="math inline">\(U_c\)</span>。</li>
+<li><strong>数学推导</strong>: 让我们定义 <span class="math inline">\(A_t = \sum_{i=1}^t v_i k_i^T\)</span>。
+<ul>
+<li><p><span class="math inline">\(A_t = A_p + A_c\)</span>，其中<span class="math inline">\(A_p\)</span>是之前所有块的<span class="math inline">\(vk^T\)</span>之和，<span class="math inline">\(A_c\)</span>是当前块的<span class="math inline">\(vk^T\)</span>之和。</p></li>
+<li><p>目标是计算 <span class="math inline">\(U_t = (I - A_p - A_c)^{-1}\)</span>。</p></li>
+<li><p>这里我们可以使用<strong>Woodbury矩阵恒等式</strong>或其特例<strong>Sherman-Morrison公式</strong>。该恒等式描述了矩阵的逆在受到一个低秩更新时的变化： <span class="math display">\[
+(A + UCV)^{-1} = A^{-1} - A^{-1}U(C^{-1} + VA^{-1}U)^{-1}VA^{-1}
+\]</span></p></li>
+<li><p>我们将 <span class="math inline">\(I - A_p - A_c\)</span> 变形为<span class="math inline">\((I - A_p) - A_c\)</span>。令<span class="math inline">\(B = I - A_p\)</span>，则<span class="math inline">\(B^{-1} = U_p\)</span>。我们要求<span class="math inline">\((B - A_c)^{-1}\)</span>。</p></li>
+<li><p><span class="math inline">\(A_c\)</span>可以表示为<span class="math inline">\(V_c K_c^T\)</span>，其中<span class="math inline">\(V_c\)</span>和<span class="math inline">\(K_c\)</span>分别是当前块的<span class="math inline">\(v\)</span>和<span class="math inline">\(k\)</span>向量堆叠成的矩阵。</p></li>
+<li><p>应用Woodbury恒等式： <span class="math display">\[
+U_t = (B - V_c K_c^T)^{-1} = B^{-1} + B^{-1}V_c(I - K_c^T B^{-1} V_c)^{-1} K_c^T B^{-1}
+\]</span> 代入<span class="math inline">\(B^{-1} = U_p\)</span>： <span class="math display">\[
+U_t = U_p + U_p V_c (I - K_c^T U_p V_c)^{-1} K_c^T U_p
+\]</span> 这个公式允许我们从前一个块的状态<span class="math inline">\(U_p\)</span>和当前块的数据<span class="math inline">\((V_c, K_c)\)</span>来计算当前块的最终状态<span class="math inline">\(U_t\)</span>。其中，<span class="math inline">\(I - K_c^T U_p V_c\)</span>是一个<span class="math inline">\(B \times B\)</span>的小矩阵，其求逆成本较低。当前块内部的计算可以高度并行化。</p></li>
+<li><p><strong>关于论文中公式的评论</strong>: 论文中给出的更新公式 <span class="math inline">\(U_c = (I - A_c)^{-1} (I + A_c U_p)\)</span> 似乎与标准的Woodbury恒等式推导出的形式不同。这可能是一个简化或特定条件下的表述，也可能是原文笔误。标准的推导如上所示，它清晰地展示了如何从<span class="math inline">\(U_p\)</span>更新到<span class="math inline">\(U_t\)</span>。然而，无论具体公式形式如何，其核心思想是<strong>将对<span class="math inline">\(t \times t\)</span>大矩阵的依赖，转化为对<span class="math inline">\(d \times d\)</span>状态矩阵和<span class="math inline">\(B \times B\)</span>块内交互矩阵的操作</strong>。</p></li>
+</ul></li>
+<li><strong>复杂度分析</strong>: 作者给出的<span class="math inline">\(O(L/B \cdot (B^2 d + B d^2 + d^3))\)</span>是合理的。
+<ul>
+<li><span class="math inline">\(B^2 d\)</span>: 计算块内的<span class="math inline">\(K^T U_p V\)</span>等矩阵乘法。</li>
+<li><span class="math inline">\(B d^2\)</span>: 块内其他矩阵乘法。</li>
+<li><span class="math inline">\(d^3\)</span>: 每次块更新结束时，可能需要一个<span class="math inline">\(d \times d\)</span>的矩阵求逆（或类似操作）来稳定或更新状态。 这个复杂度允许模型以块为单位进行并行，实现了在GPU上的高效训练。</li>
+</ul></li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="理论分析-theoretical-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="理论分析-theoretical-analysis"><strong>3. 理论分析 (Theoretical Analysis)</strong></h3>
+<p>Deltaformer被证明能够达到<span class="math inline">\(NC^1\)</span>的表达能力。</p>
+<ul>
+<li><strong><span class="math inline">\(NC^1\)</span>的意义</strong>: <span class="math inline">\(NC^1\)</span>比<span class="math inline">\(TC^0\)</span>更强大。<span class="math inline">\(NC^1\)</span>能够解决而<span class="math inline">\(TC^0\)</span>无法解决的典型问题包括：
+<ul>
+<li><strong>奇偶校验 (Parity)</strong>: 判断输入二进制位中1的个数是奇数还是偶数。</li>
+<li><strong>有向图可达性 (Graph Reachability)</strong>: 判断图中两个节点之间是否存在路径。</li>
+<li><strong>置换组合 (Permutation Composition)</strong>: 如论文中提到的追踪n个元素的交换。</li>
+</ul></li>
+<li><strong>证明思路 (构造性证明)</strong>:
+<ol type="1">
+<li><strong>选择一个<span class="math inline">\(NC^1\)</span>完备问题</strong>: 作者选择了“追踪n个元素交换”这一任务。如果能证明Deltaformer可以解决这个问题，就证明了它的能力至少达到了<span class="math inline">\(NC^1\)</span>。</li>
+<li><strong>矩阵求逆与图可达性</strong>: Deltaformer的核心操作是<span class="math inline">\(U = (I - A)^{-1}\)</span>。这个操作与图论紧密相关。如果我们考虑<span class="math inline">\(A\)</span>为一个图的邻接矩阵，那么<span class="math inline">\((I-A)^{-1}\)</span>可以通过其诺依曼级数展开： <span class="math display">\[
+(I - A)^{-1} = I + A + A^2 + A^3 + \dots
+\]</span> <span class="math inline">\(A^k\)</span>的第<span class="math inline">\((i, j)\)</span>个元素表示从节点<span class="math inline">\(i\)</span>到节点<span class="math inline">\(j\)</span>长度为<span class="math inline">\(k\)</span>的路径数量。因此，<span class="math inline">\(\sum_{k=0}^{\infty} A^k\)</span>的第<span class="math inline">\((i, j)\)</span>个元素非零，当且仅当节点<span class="math inline">\(i\)</span>和<span class="math inline">\(j\)</span>之间存在路径。这直接对应了<strong>图的可达性问题</strong>。</li>
+<li><strong>结论</strong>: 由于矩阵求逆（在特定代数结构下）是<span class="math inline">\(NC\)</span>中的一个基本操作，且与图可达性等价，而图可达性是<span class="math inline">\(NC^1\)</span>的经典问题，因此包含该操作的Deltaformer天然具备了超越<span class="math inline">\(TC^0\)</span>的潜力。作者在论文中通过具体构造证明了这一点。</li>
+</ol></li>
+</ul>
+<hr>
+</section>
+<section id="实验验证与批判性评估" class="level3">
+<h3 class="anchored" data-anchor-id="实验验证与批判性评估"><strong>4. 实验验证与批判性评估</strong></h3>
+<section id="toy-task的意义" class="level4">
+<h4 class="anchored" data-anchor-id="toy-task的意义"><strong>4.1 Toy Task的意义</strong></h4>
+<p>作者选择在Toy Task上进行实验，这在模型理论研究中是非常严谨和必要的。这些任务（如元素交换、图连通性）被专门设计用来探测模型的特定计算能力。如果一个模型声称具备<span class="math inline">\(NC^1\)</span>的能力，它就<strong>必须</strong>能够解决这些任务。实验结果显示Deltaformer可以解决而Transformer不能，这为模型的理论主张提供了强有力的实证支持。</p>
+</section>
+<section id="批判性评估与潜在问题" class="level4">
+<h4 class="anchored" data-anchor-id="批判性评估与潜在问题"><strong>4.2 批判性评估与潜在问题</strong></h4>
+<p>作为一个研究者，我们需要审视该工作可能存在的局限和挑战：</p>
+<ol type="1">
+<li><strong>大规模语言任务的扩展性 (Scalability to large-scale tasks)</strong>: 这是最大的问题。在Toy Task上的成功并不能直接保证在真实、复杂的语言建模任务上也能取得优势。<span class="math inline">\(NC^1\)</span>能力（如计算图连通性）是否是提升语言理解和生成能力的关键？这仍然是一个开放性问题。模型的归纳偏置（inductive bias）是否与自然语言的内在结构完全匹配，有待大规模实验验证。</li>
+<li><strong>计算成本与效率</strong>: 尽管块状算法实现了并行，但<span class="math inline">\(d^3\)</span>的求逆操作成本很高。在标准Transformer中，<span class="math inline">\(d\)</span>（head dimension）通常是64或128。<span class="math inline">\(128^3\)</span>约等于200万，这是一个不小的计算开销，可能会限制模型的隐藏层维度或总参数量，从而影响其容量。与FlashAttention等高度优化的注意力实现相比，Deltaformer的实际训练速度和效率需要进行详细的基准测试。</li>
+<li><strong>数值稳定性 (Numerical Stability)</strong>: 矩阵求逆是一个对数值敏感的操作。如果矩阵<span class="math inline">\(I-A\)</span>是病态的（ill-conditioned）或接近奇异，求逆过程可能会导致巨大的数值误差，从而使训练崩溃。模型是否需要特殊的正则化手段、激活函数或者参数初始化策略来保证<span class="math inline">\(I-A\)</span>的良好性质？论文中没有提及这一点，但在实际应用中至关重要。</li>
+<li><strong>核函数的选择</strong>: 作者提到核函数的选择很重要。使用<span class="math inline">\(softmax\)</span>核是一个巧妙的设计，因为它与现有Transformer组件兼容。但这是否是最优选择？其他核函数（如线性核、多项式核、高斯核）是否会带来不同的性能和计算特性？这方面需要更多的消融实验。</li>
+</ol>
+</section>
+</section>
+<section id="结论" class="level3">
+<h3 class="anchored" data-anchor-id="结论"><strong>5. 结论</strong></h3>
+<p>该论文清晰地阐述了Deltaformer的核心思想、理论基础和实现路径。它精准地抓住了当前主流架构Transformer的理论局限（<span class="math inline">\(TC^0\)</span>），并从计算复杂性理论中寻找突破口，提出了一种更有潜力的<span class="math inline">\(NC^1\)</span>模型。</p>
+<p><strong>总结来说，这项工作是富有洞察力的，它将经典的计算理论与现代的深度学习架构设计相结合，逻辑严密，理论扎实。然而，其实用价值最终取决于其在大规模、真实世界任务上的表现，以及能否在计算成本和数值稳定性等工程挑战上找到令人满意的解决方案。</strong> 这确实是一块值得后来者继续挖掘的“美玉”。</p>
 
 
 </section>
