@@ -200,7 +200,7 @@ window.Quarto = {
 <li><strong>计算复杂性类 (Complexity Classes)</strong>: 为了理解这个矛盾，我们必须先厘清几个关键的复杂性类：
 <ul>
 <li><strong>P (Polynomial Time)</strong>: 可以在确定性图灵机上通过多项式时间解决的决策问题集合。这基本涵盖了所有我们认为“可计算”的问题。循环神经网络（RNNs），如LSTM，其计算过程是顺序的，属于P类问题。</li>
-<li><strong>NC (Nick’s Class)</strong>: 可以在多项式数量的处理器上，在多对数（polylogarithmic, <span class="math inline">\(\log^k(n)\)</span>）时间内解决的问题集合。<span class="math inline">\(NC\)</span>$代表了那些可以被高效<strong>并行化</strong>的问题。</li>
+<li><strong>NC (Nick’s Class)</strong>: 可以在多项式数量的处理器上，在多对数（polylogarithmic, <span class="math inline">\(\log^k(n)\)</span>）时间内解决的问题集合。<span class="math inline">\(NC\)</span>代表了那些可以被高效<strong>并行化</strong>的问题。</li>
 <li><strong><span class="math inline">\(TC^0\)</span></strong>: NC的一个子类。它代表可以被一个<strong>常数深度</strong>、<strong>多项式大小</strong>、且包含<strong>阈值门（Threshold Gates）</strong>的电路解决的问题。标准Transformer的自注意力机制（Self-Attention）已被证明其计算能力等价于<span class="math inline">\(TC^0\)</span>。阈值门可以计算输入的加权和是否超过某个阈值，这与注意力中的加权求和与Softmax操作有直接关联。</li>
 </ul></li>
 <li><strong>核心矛盾</strong>: 作者指出，<span class="math inline">\(TC^0\)</span>的能力是有限的。例如，它无法有效解决需要多步推理或状态追踪的问题。而LSTM这类顺序模型虽然表达能力更强（理论上是图灵完备的），但其计算过程是<span class="math inline">\(t\)</span>依赖于<span class="math inline">\(t-1\)</span>，无法大规模并行，这在GPU时代是致命的。作者认为，在几乎完全并行的<span class="math inline">\(TC^0\)</span>（Transformer）和完全顺序的<span class="math inline">\(P\)</span>（LSTM）之间，存在着广阔的中间地带（如<span class="math inline">\(NC^1\)</span>, <span class="math inline">\(NC²\)</span>等），这些复杂性类既允许高度并行，又具备比<span class="math inline">\(TC^0\)</span>更强的表达能力。Deltaformer的目标就是探索这片区域。</li>
@@ -228,7 +228,7 @@ S_t = f(S_{t-1}, x_t)
 <h4 class="anchored" data-anchor-id="kernelized-delta-rule"><strong>2.1 Kernelized Delta Rule</strong></h4>
 <ul>
 <li><p><strong>核技巧 (Kernel Trick)</strong>: 核技巧允许我们在一个高维甚至无穷维的特征空间中进行计算，而无需显式地定义这个空间的映射<span class="math inline">\(\phi(\cdot)\)</span>。我们只需要定义核函数<span class="math inline">\(K(x, y) = \langle \phi(x), \phi(y) \rangle\)</span>，即两个向量在高维空间中的內积。</p></li>
-<li><p><strong>推导</strong>: 博客中的数学表述有些跳跃，我将尝试重构并推导一个更清晰的版本。让我们假设一个基础的Delta Rule状态更新，其状态<span class="math inline">\(W\)</span>是一个矩阵： <span class="math display">\[
+<li><p><strong>推导</strong>: 论文中的数学表述有些跳跃，我将尝试重构并推导一个更清晰的版本。让我们假设一个基础的Delta Rule状态更新，其状态<span class="math inline">\(W\)</span>是一个矩阵： <span class="math display">\[
 W_t = W_{t-1} + v_t k_t^T
 \]</span> 在引入核技巧后，所有向量都被映射到高维空间<span class="math inline">\(\phi(\cdot)\)</span>： <span class="math display">\[
 \Phi_t = \Phi_{t-1} + \phi(v_t) \phi(k_t)^T
@@ -238,8 +238,8 @@ y_t = \Phi_{t-1} \phi(q_t) = \left( \sum_{i=1}^{t-1} \phi(v_i) \phi(k_i)^T \righ
 y_t = \sum_{i=1}^{t-1} \phi(v_i) \left( \phi(k_i)^T \phi(q_t) \right)
 \]</span> 此时，我们可以应用核函数<span class="math inline">\(K(k_i, q_t) = \phi(k_i)^T \phi(q_t)\)</span>来替换无穷维的內积： <span class="math display">\[
 y_t = \sum_{i=1}^{t-1} K(k_i, q_t) \phi(v_i)
-\]</span> 这个结果<span class="math inline">\(y_t\)</span>仍然是无穷维的。博客在这里的描述（“将<span class="math inline">\(\phi\)</span>和<span class="math inline">\(\Psi\)</span>都给消去了”）可能存在一定的模糊性。一个可能的解释是，最终的输出<span class="math inline">\(o_t\)</span>是通过另一次核化的方式计算的，例如<span class="math inline">\(o_t = \sum_j K(y_t, z_j) \alpha_j\)</span>，从而避免了无穷维向量的直接操作。</p></li>
-<li><p><strong>博客中的公式</strong>: 博客中呈现的读写公式更为复杂，暗示了一种更高级的更新规则，但其核心思想依然是利用核函数替换內积。作者选择<span class="math inline">\(softmax\)</span>作为核函数，即<span class="math inline">\(K(q, k) = \text{softmax}(q^T k)\)</span>，这巧妙地将该机制与Transformer的注意力形式统一起来。</p></li>
+\]</span> 这个结果<span class="math inline">\(y_t\)</span>仍然是无穷维的。论文在这里的描述（“将<span class="math inline">\(\phi\)</span>和<span class="math inline">\(\Psi\)</span>都给消去了”）可能存在一定的模糊性。一个可能的解释是，最终的输出<span class="math inline">\(o_t\)</span>是通过另一次核化的方式计算的，例如<span class="math inline">\(o_t = \sum_j K(y_t, z_j) \alpha_j\)</span>，从而避免了无穷维向量的直接操作。</p></li>
+<li><p><strong>论文中的公式</strong>: 论文中呈现的读写公式更为复杂，暗示了一种更高级的更新规则，但其核心思想依然是利用核函数替换內积。作者选择<span class="math inline">\(softmax\)</span>作为核函数，即<span class="math inline">\(K(q, k) = \text{softmax}(q^T k)\)</span>，这巧妙地将该机制与Transformer的注意力形式统一起来。</p></li>
 </ul>
 </section>
 <section id="chunk-wise-algorithm-for-gpu-implementation" class="level4">
@@ -255,14 +255,14 @@ y_t = \sum_{i=1}^{t-1} K(k_i, q_t) \phi(v_i)
 <li><p>这里我们可以使用<strong>Woodbury矩阵恒等式</strong>或其特例<strong>Sherman-Morrison公式</strong>。该恒等式描述了矩阵的逆在受到一个低秩更新时的变化： <span class="math display">\[
 (A + UCV)^{-1} = A^{-1} - A^{-1}U(C^{-1} + VA^{-1}U)^{-1}VA^{-1}
 \]</span></p></li>
-<li><p>我们将 <span class="math inline">\(I - A_p - A_c\)</span> 变形为 <span class="math inline">\((I - A_p) - A_c\)</span>。令<span class="math inline">\(B = I - A_p\)</span>，则<span class="math inline">\(B^{-1} = U_p\)</span>。我们要求$ (B - A_c)^{-1}$。</p></li>
+<li><p>我们将 <span class="math inline">\(I - A_p - A_c\)</span> 变形为<span class="math inline">\((I - A_p) - A_c\)</span>。令<span class="math inline">\(B = I - A_p\)</span>，则<span class="math inline">\(B^{-1} = U_p\)</span>。我们要求<span class="math inline">\((B - A_c)^{-1}\)</span>。</p></li>
 <li><p><span class="math inline">\(A_c\)</span>可以表示为<span class="math inline">\(V_c K_c^T\)</span>，其中<span class="math inline">\(V_c\)</span>和<span class="math inline">\(K_c\)</span>分别是当前块的<span class="math inline">\(v\)</span>和<span class="math inline">\(k\)</span>向量堆叠成的矩阵。</p></li>
 <li><p>应用Woodbury恒等式： <span class="math display">\[
 U_t = (B - V_c K_c^T)^{-1} = B^{-1} + B^{-1}V_c(I - K_c^T B^{-1} V_c)^{-1} K_c^T B^{-1}
 \]</span> 代入<span class="math inline">\(B^{-1} = U_p\)</span>： <span class="math display">\[
 U_t = U_p + U_p V_c (I - K_c^T U_p V_c)^{-1} K_c^T U_p
 \]</span> 这个公式允许我们从前一个块的状态<span class="math inline">\(U_p\)</span>和当前块的数据<span class="math inline">\((V_c, K_c)\)</span>来计算当前块的最终状态<span class="math inline">\(U_t\)</span>。其中，<span class="math inline">\(I - K_c^T U_p V_c\)</span>是一个<span class="math inline">\(B \times B\)</span>的小矩阵，其求逆成本较低。当前块内部的计算可以高度并行化。</p></li>
-<li><p><strong>关于博客中公式的评论</strong>: 博客中给出的更新公式 <span class="math inline">\(U_c = (I - A_c)^{-1} (I + A_c U_p)\)</span> 似乎与标准的Woodbury恒等式推导出的形式不同。这可能是一个简化或特定条件下的表述，也可能是原文笔误。标准的推导如上所示，它清晰地展示了如何从<span class="math inline">\(U_p\)</span>更新到<span class="math inline">\(U_t\)</span>。然而，无论具体公式形式如何，其核心思想是<strong>将对<span class="math inline">\(t \times t\)</span>大矩阵的依赖，转化为对<span class="math inline">\(d \times d\)</span>状态矩阵和<span class="math inline">\(B \times B\)</span>块内交互矩阵的操作</strong>。</p></li>
+<li><p><strong>关于论文中公式的评论</strong>: 论文中给出的更新公式 <span class="math inline">\(U_c = (I - A_c)^{-1} (I + A_c U_p)\)</span> 似乎与标准的Woodbury恒等式推导出的形式不同。这可能是一个简化或特定条件下的表述，也可能是原文笔误。标准的推导如上所示，它清晰地展示了如何从<span class="math inline">\(U_p\)</span>更新到<span class="math inline">\(U_t\)</span>。然而，无论具体公式形式如何，其核心思想是<strong>将对<span class="math inline">\(t \times t\)</span>大矩阵的依赖，转化为对<span class="math inline">\(d \times d\)</span>状态矩阵和<span class="math inline">\(B \times B\)</span>块内交互矩阵的操作</strong>。</p></li>
 </ul></li>
 <li><strong>复杂度分析</strong>: 作者给出的<span class="math inline">\(O(L/B \cdot (B^2 d + B d^2 + d^3))\)</span>是合理的。
 <ul>
@@ -282,7 +282,7 @@ U_t = U_p + U_p V_c (I - K_c^T U_p V_c)^{-1} K_c^T U_p
 <ul>
 <li><strong>奇偶校验 (Parity)</strong>: 判断输入二进制位中1的个数是奇数还是偶数。</li>
 <li><strong>有向图可达性 (Graph Reachability)</strong>: 判断图中两个节点之间是否存在路径。</li>
-<li><strong>置换组合 (Permutation Composition)</strong>: 如博客中提到的追踪n个元素的交换。</li>
+<li><strong>置换组合 (Permutation Composition)</strong>: 如论文中提到的追踪n个元素的交换。</li>
 </ul></li>
 <li><strong>证明思路 (构造性证明)</strong>:
 <ol type="1">
@@ -307,14 +307,14 @@ U_t = U_p + U_p V_c (I - K_c^T U_p V_c)^{-1} K_c^T U_p
 <ol type="1">
 <li><strong>大规模语言任务的扩展性 (Scalability to large-scale tasks)</strong>: 这是最大的问题。在Toy Task上的成功并不能直接保证在真实、复杂的语言建模任务上也能取得优势。<span class="math inline">\(NC^1\)</span>能力（如计算图连通性）是否是提升语言理解和生成能力的关键？这仍然是一个开放性问题。模型的归纳偏置（inductive bias）是否与自然语言的内在结构完全匹配，有待大规模实验验证。</li>
 <li><strong>计算成本与效率</strong>: 尽管块状算法实现了并行，但<span class="math inline">\(d^3\)</span>的求逆操作成本很高。在标准Transformer中，<span class="math inline">\(d\)</span>（head dimension）通常是64或128。<span class="math inline">\(128^3\)</span>约等于200万，这是一个不小的计算开销，可能会限制模型的隐藏层维度或总参数量，从而影响其容量。与FlashAttention等高度优化的注意力实现相比，Deltaformer的实际训练速度和效率需要进行详细的基准测试。</li>
-<li><strong>数值稳定性 (Numerical Stability)</strong>: 矩阵求逆是一个对数值敏感的操作。如果矩阵<span class="math inline">\(I-A\)</span>是病态的（ill-conditioned）或接近奇异，求逆过程可能会导致巨大的数值误差，从而使训练崩溃。模型是否需要特殊的正则化手段、激活函数或者参数初始化策略来保证<span class="math inline">\(I-A\)</span>的良好性质？博客中没有提及这一点，但在实际应用中至关重要。</li>
+<li><strong>数值稳定性 (Numerical Stability)</strong>: 矩阵求逆是一个对数值敏感的操作。如果矩阵<span class="math inline">\(I-A\)</span>是病态的（ill-conditioned）或接近奇异，求逆过程可能会导致巨大的数值误差，从而使训练崩溃。模型是否需要特殊的正则化手段、激活函数或者参数初始化策略来保证<span class="math inline">\(I-A\)</span>的良好性质？论文中没有提及这一点，但在实际应用中至关重要。</li>
 <li><strong>核函数的选择</strong>: 作者提到核函数的选择很重要。使用<span class="math inline">\(softmax\)</span>核是一个巧妙的设计，因为它与现有Transformer组件兼容。但这是否是最优选择？其他核函数（如线性核、多项式核、高斯核）是否会带来不同的性能和计算特性？这方面需要更多的消融实验。</li>
 </ol>
 </section>
 </section>
 <section id="结论" class="level3">
 <h3 class="anchored" data-anchor-id="结论"><strong>5. 结论</strong></h3>
-<p>该博客清晰地阐述了Deltaformer的核心思想、理论基础和实现路径。它精准地抓住了当前主流架构Transformer的理论局限（<span class="math inline">\(TC^0\)</span>），并从计算复杂性理论中寻找突破口，提出了一种更有潜力的<span class="math inline">\(NC^1\)</span>模型。</p>
+<p>该论文清晰地阐述了Deltaformer的核心思想、理论基础和实现路径。它精准地抓住了当前主流架构Transformer的理论局限（<span class="math inline">\(TC^0\)</span>），并从计算复杂性理论中寻找突破口，提出了一种更有潜力的<span class="math inline">\(NC^1\)</span>模型。</p>
 <p><strong>总结来说，这项工作是富有洞察力的，它将经典的计算理论与现代的深度学习架构设计相结合，逻辑严密，理论扎实。然而，其实用价值最终取决于其在大规模、真实世界任务上的表现，以及能否在计算成本和数值稳定性等工程挑战上找到令人满意的解决方案。</strong> 这确实是一块值得后来者继续挖掘的“美玉”。</p>
 
 
