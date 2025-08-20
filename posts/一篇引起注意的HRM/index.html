@@ -185,16 +185,16 @@ window.Quarto = {
 
 
 <p>近半年来，关于递归Transformer的研究层出不穷， 我之前重点关注过的有两篇。 <strong>Recurrent Depth Approach</strong> (<a href="https://arxiv.org/pdf/2502.05171">Geiping et al., 2025</a>) 使用KL 散度（一种衡量两次概率分布差异的指标）比较第 i 次和第 i-1 次循环得到的“下一步 token 概率分布”。如果差异已经很小（低于 5 × 10⁻⁴）则立刻停止循环，直接采样输出token；<strong>Mixture-of-Recursions</strong> (<a href="https://arxiv.org/pdf/2507.10524">He et al., 2025</a>) 则将不同递归深度视为专家，进行自适应的计算分配。</p>
-<p>近日，一篇同属于递归Transformer研究的论文《Hierarchical Reasoning Model》(HRM)论文及其在ARC-AGI基准上的卓越表现引发了AI社区的广泛关注。然而，在一系列深入的讨论和ARC官方的实证分析之后，剥离其“大脑启发”的叙事光环，更清晰地审视其技术内核。本文将基于对HRM核心机制的深度剖令，提出一个核心观点：和以上两篇论文相似，HRM在本质上可以被理解为一个标准Transformer架构的巧妙特例，其真正的创新之处不在于模拟大脑，而在于一种动态的、递归式的优化范式。</p>
+<p>近日，一篇同属于递归Transformer研究的论文(<a href="https://arxiv.org/pdf/2506.21734">Hierarchical Reasoning Model</a>)(HRM)论文及其在ARC-AGI基准上的卓越表现引发了AI社区的广泛关注。然而，在一系列深入的讨论和ARC官方的实证分析之后，剥离其“大脑启发”的叙事光环，更清晰地审视其技术内核。本文将基于对HRM核心机制的深度剖令，提出一个核心观点：和以上两篇论文相似，HRM在本质上可以被理解为一个标准Transformer架构的巧妙特例，其真正的创新之处不在于模拟大脑，而在于一种动态的、递归式的优化范式。</p>
 <section id="第一部分h-l层一种时间尺度上的稀疏与密集注意力融合" class="level3">
 <h3 class="anchored" data-anchor-id="第一部分h-l层一种时间尺度上的稀疏与密集注意力融合"><strong>第一部分：H-L层——一种时间尺度上的稀疏与密集注意力融合</strong></h3>
-<p><strong>观点一:</strong> “H-L层的交替运作，在本质上是一种在不同时间尺度上对信息进行处理的Transformer架构融合。其中，L-Module扮演了“密集全注意力计算”的角色，而H-Module则执行了对L-Module计算结果的“稀疏时间提取”。”</p>
+<p><strong>观点一: H-L层的交替运作，在本质上是一种在不同时间尺度上对信息进行处理的Transformer架构融合。其中，L-Module扮演了“密集全注意力计算”的角色，而H-Module则执行了对L-Module计算结果的“稀疏时间提取</strong>。</p>
 <ul>
 <li><p><strong>L-Module (低层模块)的角色：密集的全注意力计算 (Dense Full Attention)</strong> 在HRM的运作中，<span class="math inline">\(f_L\)</span>在每个H-cycle内会高频次地执行<span class="math inline">\(T\)</span>次。每一次执行，它都对完整的输入序列状态进行一次标准的<code>full attention</code>计算。这可以被视为一种<strong>精细化的、局部的、密集的</strong>信息处理过程。它的目标是在一个固定的高层“规划”（由<span class="math inline">\(f_H\)</span>提供）指导下，通过反复的全局信息交换，让系统状态收敛到一个局部的、细节丰富的“最优解”。</p></li>
 <li><p><strong>H-Module (高层模块)的角色：稀疏的时间尺度提取 (Sparse Temporal Extraction)</strong> 与<span class="math inline">\(f_L\)</span>的密集计算不同，<span class="math inline">\(f_H\)</span>的激活是<strong>稀疏</strong>的。它只在<span class="math inline">\(f_L\)</span>完成了一个完整的计算周期后才被调用一次。它的输入，是<span class="math inline">\(f_L\)</span>经过<span class="math inline">\(T\)</span>次迭代后得到的<strong>最终状态</strong>。这个行为在信息处理的意义上，可以被解读为：<span class="math inline">\(f_H\)</span>不对每一个微小的中间状态进行响应，而是对一个已经“阶段性收敛”的、信息量更丰富的宏观状态进行一次<strong>提炼和抽象</strong>。因此，您所说的“对低层次注意力的稀疏提取”，可以理解为<span class="math inline">\(f_H\)</span>在<strong>时间维度</strong>上对<span class="math inline">\(f_L\)</span>的计算结果进行了一次稀疏采样，只取其终点，从而进行更宏观的、战略性的状态调整。</p></li>
 </ul>
 <p>这种“密集-稀疏”的交替工作模式，在架构上实现了一种计算资源的动态分配：大部分算力被用于底层的细节打磨，而少部分、但更关键的算力被用于高层的方向调整。</p>
-<p><strong>观点二:</strong>: “HRM的递归式垂直结构，使其可以被抽象地视为一个在深度/时间维度上重复堆叠的、参数共享的Transformer Block。其每一轮递归的输出，都可以被理解为一次“隐式线性CoT”的Token吐出。因此，HRM的网络架构，本质上是一个普通双向Transformer架构的特例。”</p>
+<p><strong>观点二:HRM的递归式垂直结构，使其可以被抽象地视为一个在深度/时间维度上重复堆叠的、参数共享的Transformer Block。其每一轮递归的输出，都可以被理解为一次“隐式线性CoT”的Token吐出。因此，HRM的网络架构，本质上是一个普通双向Transformer架构的特例。</strong></p>
 <ul>
 <li><p><strong>垂直堆叠与参数共享</strong>: HRM的“外部循环”（Outer Loop）让整个H-L模块组被反复调用，并将上一轮的输出作为下一轮的输入。这在计算图上，等效于将一个固定的、参数共享的Transformer Block在“深度”或“时间”维度上<strong>垂直堆叠</strong>了多次。一个标准的深度Transformer是在空间上堆叠不同的Block，而HRM是在时间上重复使用同一个Block。</p></li>
 <li><p><strong>隐式的线性CoT</strong>: 在LLM的CoT中，模型生成一个Token，这个Token作为下一步推理的显式“锚点”。在HRM的递归过程中，每一次循环结束后产生的<strong>整个隐藏状态张量</strong>，就可以被视为一个高维、连续的“潜空间Token”。它不像语言Token那样可读，但它在功能上扮演了同样的角色：承载上一轮推理的全部信息，并作为下一轮推理的起点。由于这个过程是确定性的、一步接一步的，所以称之为“线性CoT”是恰当的。</p></li>
@@ -210,7 +210,7 @@ window.Quarto = {
 </section>
 <section id="第三部分一步梯度优化动态掩码下的on-policy式学习" class="level3">
 <h3 class="anchored" data-anchor-id="第三部分一步梯度优化动态掩码下的on-policy式学习"><strong>第三部分：一步梯度优化——动态掩码下的On-Policy式学习</strong></h3>
-<p><strong>观点三</strong>: ““一步梯度”优化，在效果上等同于一种动态掩码机制，即只对最新产生的“隐式CoT”（最近一次迭代的计算结果）进行梯度优化。这种逐轮迭代、即时更新的模式，可以被精确地类比为强化学习中的On-Policy Rollout过程。”</p>
+<p><strong>观点三: “一步梯度”优化，在效果上等同于一种动态掩码机制，即只对最新产生的“隐式CoT”（最近一次迭代的计算结果）进行梯度优化。这种逐轮迭代、即时更新的模式，可以被精确地类比为强化学习中的On-Policy Rollout过程。</strong></p>
 <ul>
 <li><p><strong>动态掩码的视角</strong>: “一步梯度”通过<code>torch.no_grad()</code>和<code>.detach()</code>，在效果上等同于在每次反向传播时，都将历史状态（过去的所有“隐式CoT”）进行“掩码”，使其不接收梯度。梯度流动的范围被严格限定在<strong>最新产生的那一个“隐式CoT”</strong>的计算过程中。随着外部循环的推进，这个“未掩码”的窗口也在动态地向前滑动。</p></li>
 <li><p><strong>On-Policy Rollout的类比</strong>:</p>
@@ -225,7 +225,7 @@ window.Quarto = {
 </section>
 <section id="第四部分性能归因与泛化边界" class="level3">
 <h3 class="anchored" data-anchor-id="第四部分性能归因与泛化边界"><strong>第四部分：性能归因与泛化边界</strong></h3>
-<p><strong>观点四</strong>: 实证数据表明，HRM的绝大部分性能来自于在训练时见过了评估任务的“示例对”。其运作模式更接近于一种高效的“测试时训练器”或模式匹配器，而非我们所期待的、具备通用跨任务推理能力的模型。</p>
+<p><strong>观点四: 实证数据表明，HRM的绝大部分性能来自于在训练时见过了评估任务的“示例对”。其运作模式更接近于一种高效的“测试时训练器”或模式匹配器，而非我们所期待的、具备通用跨任务推理能力的模型。</strong></p>
 <p><strong>详细阐述与补充</strong>:</p>
 <p>这是ARC官方报告给出的最关键的结论，它为HRM的成功进行了“祛魅”，也为我们理解其适用范围划定了清晰的边界。</p>
 <ul>
