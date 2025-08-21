@@ -9,7 +9,7 @@
 <meta name="author" content="杨诚操">
 <meta name="dcterms.date" content="2025-08-20">
 
-<title>解构与重思：HRM论文背后的Transformer特例、动态优化与泛化边界 – Mythos</title>
+<title>Pass@k 奖励==&gt;隐式奖励 – Mythos</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -145,7 +145,7 @@ window.Quarto = {
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">解构与重思：HRM论文背后的Transformer特例、动态优化与泛化边界</h1>
+      <h1 class="title">Pass@k 奖励==&gt;隐式奖励</h1>
                                 <div class="quarto-categories">
                 <div class="quarto-category">paper</div>
               </div>
@@ -286,8 +286,8 @@ A_{neg} = (1 - p_w^{k-1}) \sqrt{\frac{p_w^k}{1-p_w^k}} - p_w^{k-1} \sqrt{\frac{1
 <li>第一部分是正的：<span class="math inline">\((1 - p_w^{k-1}) A_{group\_pos}\)</span>。这代表了它“沾光”了（与正确答案分到一组）而获得的奖励。</li>
 <li>第二部分是负的：<span class="math inline">\(p_w^{k-1} A_{group\_neg}\)</span>。这代表了它“拖后腿”了（与其他错误答案组成失败小组）而受到的惩罚。</li>
 </ul></li>
-<li><strong>动态平衡</strong>: <span class="math inline">\(A_{neg}\)</span> 的最终符号（正或负）取决于这两部分的大小。在某些情况下（例如，正确答案很多，<span class="math inline">\(p_w\)</span> 很低），<span class="math inline">\(A_{neg}\)</span> 甚至可能为正！这意味着，即使一个答案是错的，但如果它是在一个“整体表现很好”的 rollout 中产生的，它仍然可能获得微弱的正向激励。这正是 Pass@k 训练鼓励探索的精髓所在——它奖励了那些发生在“有希望的探索区域”（高 <span class="math inline">\(N_c\)</span>）中的“有价值的失败”。</li>
 </ul>
+<p><img src="./pass.png" title="奖励" class="img-fluid" alt="奖励"> * <strong>动态平衡</strong>: <span class="math inline">\(A_{neg}\)</span> 的最终符号（正或负）取决于这两部分的大小。在某些情况下（例如，正确答案很多，<span class="math inline">\(p_w\)</span> 很低），<span class="math inline">\(A_{neg}\)</span> 甚至可能为正！这意味着，即使一个答案是错的，但如果它是在一个“整体表现很好”的 rollout 中产生的，它仍然可能获得微弱的正向激励。这正是 Pass@k 训练鼓励探索的精髓所在——它奖励了那些发生在“有希望的探索区域”（高 <span class="math inline">\(N_c\)</span>）中的“有价值的失败”。</p>
 </section>
 <section id="意义与局限性分析" class="level3">
 <h3 class="anchored" data-anchor-id="意义与局限性分析">5. 意义与局限性分析</h3>
