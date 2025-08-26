@@ -317,7 +317,7 @@ window.Quarto = {
 <p><span class="math inline">\(H_0 = Y_{in}\)</span></p>
 <p><span class="math inline">\(H_{k+1} = \phi(W_{k+1} H_k)\)</span> for <span class="math inline">\(k=0, \dots, K-1\)</span></p>
 <p><span class="math inline">\(Y_{out} = H_K\)</span></p>
-<p>这里 <span class="math inline">\(Θ = {W_1, ..., W_K}\)</span>，且所有的 <span class="math inline">\(W_k\)</span> 都是 <span class="math inline">\(d × d\)</span> 的方阵。对于方阵，fan-in 和 fan-out 初始化是等价的，因此可以同时满足前向和反向的稳定性要求，确保 <span class="math inline">\(NN\)</span> 内部是尺度稳定的。</p>
+<p>这里 <span class="math inline">\(Θ = {W_1, ..., W_K}\)</span>，且所有的 <span class="math inline">\(W_k\)</span> 都是 <span class="math inline">\(d × d\)</span> 的方阵。对于方阵，fan-in 和 fan-out 初始化是等价的，因此可以同时满足前向和反向的稳定性要求，确保 <span class="math inline">\(NN\)</span> 内部是尺度稳定的。值得注意的是，在实践中，多个这样的方阵操作常被合并为一个更大的矩阵以提高计算效率。例如，一个<span class="math inline">\(d × 4d\)</span>的权重矩阵可以被视为四个<span class="math inline">\(d × d\)</span>方阵的水平拼接（Concatenation）。</p>
 </section>
 <section id="组装推导不同层的学习率缩放率" class="level4">
 <h4 class="anchored" data-anchor-id="组装推导不同层的学习率缩放率">3.3 组装：推导不同层的学习率缩放率</h4>
@@ -328,22 +328,22 @@ window.Quarto = {
 <p><span class="math inline">\(\frac{\partial L}{\partial W_{in}} = \frac{\partial L}{\partial Y_{in}} X^\top\)</span></p>
 <p>现在，我们来观察规律并推导学习率的缩放法则：</p>
 <ol type="1">
-<li><strong>输出层 (W_{out})</strong>：
+<li><strong>输出层 (<span class="math inline">\(W_{out}\)</span>)</strong>：
 <ul>
 <li><span class="math inline">\(∂L/∂W_{out}\)</span> 是一个 <span class="math inline">\(d_{out} × d\)</span> 的矩阵。</li>
 <li>由于 <span class="math inline">\(Y_{out}\)</span> 和 <span class="math inline">\(∂L/∂Z\)</span> 的元素尺度都是 <span class="math inline">\(O(1)\)</span>，<span class="math inline">\(∂L/∂W_{out}\)</span> 的元素尺度也是 <span class="math inline">\(O(1)\)</span>。</li>
 <li><span class="math inline">\(\left\| \frac{\partial L}{\partial W_{out}} \right\|_F^2\)</span> 是 <span class="math inline">\(d_{out} × d\)</span> 个 <span class="math inline">\(O(1)\)</span> 元素的平方和。因为 <span class="math inline">\(d_{out}\)</span> 是常数，所以其量级为 <span class="math inline">\(O(d)\)</span>。</li>
 <li>为了使 <span class="math inline">\(ΔL_{out} ≈ -η_{out} * O(d)\)</span> 保持为 <span class="math inline">\(O(1)\)</span>，学习率必须满足： <strong><span class="math inline">\(η_{out} ∝ 1/d\)</span></strong>。</li>
 </ul></li>
-<li><strong>中间层 (W_k in Θ)</strong>：
+<li><strong>中间层 (<span class="math inline">\(W_k \in Θ\)</span>)</strong>：
 <ul>
 <li><span class="math inline">\(∂L/∂W_k\)</span> 是一个 <span class="math inline">\(d × d\)</span> 的方阵。</li>
 <li>这里，μP 提出一个关键操作：<strong>将 <span class="math inline">\(W_{out}\)</span> 的初始化方差从 <span class="math inline">\(O(1/d)\)</span> (fan-out) 调整为 <span class="math inline">\(O(1/d²)\)</span></strong> (其合理性将在下一节解释)。</li>
 <li>在这个特殊设置下，可以推导出 <span class="math inline">\(∂L/∂W_k\)</span> 的元素均方根(RMS)为 <span class="math inline">\(O(1/d)\)</span>。</li>
-<li>因此，<span class="math inline">\(\left\| \frac{\partial L}{\partial W_k} \right\|_F^2\)</span> 是 <span class="math inline">\(d²\)</span> 个 <span class="math inline">\(O(1/d²)\)</span> 元素的平方和，其总量级为 <span class="math inline">\(d² * O(1/d²) = O(1)\)</span>。</li>
+<li>因此，<span class="math inline">\(\left\| \frac{\partial L}{\partial W_k} \right\|_F^2\)</span> 是 <span class="math inline">\(d²\)</span> 个 <span class="math inline">\(O(1/d^2)\)</span> 元素的平方和，其总量级为 <span class="math inline">\(d^2 * O(1/d^2) = O(1)\)</span>。</li>
 <li>为了使 <span class="math inline">\(ΔL_k ≈ -η_k * O(1)\)</span> 保持为 <span class="math inline">\(O(1)\)</span>，学习率<strong>无需随 <span class="math inline">\(d\)</span> 变化</strong>： <strong><span class="math inline">\(η_k ∝ 1\)</span> (常数)</strong>。</li>
 </ul></li>
-<li><strong>输入层 (W_{in})</strong>：
+<li><strong>输入层 (<span class="math inline">\(W_{in}\)</span>)</strong>：
 <ul>
 <li><span class="math inline">\(∂L/∂W_{in}\)</span> 是一个 <span class="math inline">\(d × d_{in}\)</span> 的矩阵。</li>
 <li>与中间层类似，在 <span class="math inline">\(W_{out}\)</span> 的新初始化下，<span class="math inline">\(∂L/∂W_{in}\)</span> 的元素RMS也是 <span class="math inline">\(O(1/d)\)</span>。</li>
