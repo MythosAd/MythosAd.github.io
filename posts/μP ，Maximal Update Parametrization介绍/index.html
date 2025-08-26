@@ -367,6 +367,141 @@ window.Quarto = {
 <p>为了让特征更新 <span class="math inline">\(ΔH_k\)</span> 的尺度保持稳定（即 <span class="math inline">\(RMS(ΔH_k) = O(1)\)</span>），我们必须对参数更新量 <span class="math inline">\(ΔW_k\)</span> 的尺度施加约束。可以推导，这要求：</p>
 <p><strong><span class="math inline">\(RMS(ΔW_k) = O(1/d)\)</span></strong></p>
 <p>这个对参数更新量本身提出的新约束，当它与 <span class="math inline">\(ΔL = O(1)\)</span> 的要求相结合时，便可以唯一地确定之前章节中提出的初始化和学习率缩放方案是正确的选择。它从根本上解释了为什么我们需要对 <span class="math inline">\(W_{out}\)</span> 进行特殊的 <span class="math inline">\(Var(W_{out}) ∝ 1/d²\)</span> 初始化，从而确保整个训练动态（而不仅是损失下降）在不同模型尺度下保持一致。</p>
+<p>好的，我们继续按照之前的风格和数学惯例，对 <code>Adam</code> 和 <code>Muon</code> 优化器的部分进行分析和改写。</p>
+<hr>
+</section>
+</section>
+<section id="将μp分析推广到其他优化器" class="level3">
+<h3 class="anchored" data-anchor-id="将μp分析推广到其他优化器">4. 将μP分析推广到其他优化器</h3>
+<p>前面的分析都是基于最基础的 <code>SGD</code> 优化器。然而，在实践中我们更常使用像 <code>Adam</code> 这样的自适应优化器。μP框架同样可以应用于这些优化器，但需要对它们的更新行为进行适当的近似。</p>
+<section id="adam优化器的μp分析" class="level4">
+<h4 class="anchored" data-anchor-id="adam优化器的μp分析">4.1 Adam优化器的μP分析</h4>
+<p>对于 <code>Adam</code> 优化器，我们通常使用 <code>SignSGD</code> 近似来进行数量级的分析。<code>SignSGD</code> 的核心思想是，参数的更新方向由梯度的符号决定，而不是其大小。</p>
+<ul>
+<li><strong>更新规则近似</strong>: <span class="math inline">\(\Delta W \approx -\eta \cdot \text{sign}\left(\frac{\partial L}{\partial W}\right)\)</span></li>
+<li><strong>损失增量近似</strong>: <span class="math inline">\(\Delta L \approx \langle \frac{\partial L}{\partial W}, \Delta W \rangle_F \approx -\eta \left\langle \frac{\partial L}{\partial W}, \text{sign}\left(\frac{\partial L}{\partial W}\right) \right\rangle_F = -\eta \sum_{i,j} \left| \frac{\partial L}{\partial W_{ij}} \right| = -\eta \left\| \frac{\partial L}{\partial W} \right\|_1\)</span> 这里的 <span class="math inline">\(\| \cdot \|_1\)</span> 指的是L1范数，即矩阵所有元素的绝对值之和。</li>
+</ul>
+<p>现在，我们模仿 <code>SGD</code> 的过程，使用L1范数来分析 <code>Adam</code> 的学习率缩放规律：</p>
+<ol type="1">
+<li><strong>输出层 (<span class="math inline">\(W_{out}\)</span>)</strong>:
+<ul>
+<li>梯度 <span class="math inline">\(\frac{\partial L}{\partial W_{out}}\)</span> 的维度为 <span class="math inline">\(d_{out} \times d\)</span>，其元素的均方根（RMS）为 <span class="math inline">\(O(1)\)</span>。</li>
+<li><span class="math inline">\(\left\| \frac{\partial L}{\partial W_{out}} \right\|_1\)</span> 是 <span class="math inline">\(d_{out} \times d\)</span> 个 <span class="math inline">\(O(1)\)</span> 元素的绝对值之和。因为 <span class="math inline">\(d_{out}\)</span> 是常数，所以其总量级为 <span class="math inline">\(O(d)\)</span>。</li>
+<li>为了使 <span class="math inline">\(\Delta L_{out} \approx -\eta_{out} \cdot O(d)\)</span> 保持为 <span class="math inline">\(O(1)\)</span>，学习率必须满足： <strong><span class="math inline">\(\eta_{out} \propto 1/d\)</span></strong>。</li>
+</ul></li>
+<li><strong>中间层 (<span class="math inline">\(W_k\)</span>)</strong>:
+<ul>
+<li>我们沿用之前的关键假设：<span class="math inline">\(Var(W_{out}) \propto 1/d^2\)</span>。这使得梯度 <span class="math inline">\(\frac{\partial L}{\partial W_k}\)</span> 的元素RMS为 <span class="math inline">\(O(1/d)\)</span>。</li>
+<li><span class="math inline">\(\left\| \frac{\partial L}{\partial W_k} \right\|_1\)</span> 是 <span class="math inline">\(d \times d\)</span> (<span class="math inline">\(d^2\)</span>) 个 <span class="math inline">\(O(1/d)\)</span> 元素的绝对值之和，其总量级为 <span class="math inline">\(d^2 \cdot O(1/d) = O(d)\)</span>。</li>
+<li>为了使 <span class="math inline">\(\Delta L_k \approx -\eta_k \cdot O(d)\)</span> 保持为 <span class="math inline">\(O(1)\)</span>，学习率需要相应地缩放： <strong><span class="math inline">\(\eta_k \propto 1/d\)</span></strong>。</li>
+</ul></li>
+<li><strong>输入层 (<span class="math inline">\(W_{in}\)</span>)</strong>:
+<ul>
+<li>梯度 <span class="math inline">\(\frac{\partial L}{\partial W_{in}}\)</span> 的元素RMS同样为 <span class="math inline">\(O(1/d)\)</span>。</li>
+<li><span class="math inline">\(\left\| \frac{\partial L}{\partial W_{in}} \right\|_1\)</span> 是 <span class="math inline">\(d \times d_{in}\)</span> 个 <span class="math inline">\(O(1/d)\)</span> 元素的绝对值之和。因为 <span class="math inline">\(d_{in}\)</span> 是常数，其总量级为 <span class="math inline">\(d \cdot O(1/d) = O(1)\)</span>。</li>
+<li>由于损失增量已经与尺度 <span class="math inline">\(d\)</span> 无关，学习率也无需随尺度改变： <strong><span class="math inline">\(\eta_{in} \propto 1\)</span></strong> (常数)。</li>
+</ul></li>
+</ol>
+</section>
+<section id="muon优化器的μp分析" class="level4">
+<h4 class="anchored" data-anchor-id="muon优化器的μp分析">4.2 Muon优化器的μP分析</h4>
+<p>与 <code>Adam</code> 用 <code>SignSGD</code> 近似类似，我们可以用 <code>MSignSGD</code> 来近似 <code>Muon</code> 优化器。</p>
+<ul>
+<li><strong>更新规则近似</strong>: <span class="math inline">\(\Delta W \approx -\eta \cdot \text{msign}\left(\frac{\partial L}{\partial W}\right)\)</span></li>
+<li><strong>损失增量近似</strong>: <span class="math inline">\(\Delta L \approx -\eta \left\| \frac{\partial L}{\partial W} \right\|_*\)</span> 这里的 <span class="math inline">\(\| \cdot \|_*\)</span> 指的是核范数（Nuclear Norm），即矩阵所有奇异值之和。</li>
+<li><strong>进一步近似</strong>: 计算核范数较为复杂。我们知道，弗罗贝尼乌斯范数 <span class="math inline">\(\| \cdot \|_F\)</span> 是奇异值的平方和的平方根。在数量级分析中，我们常用弗罗贝尼乌斯范数来近似核范数。因此： <span class="math inline">\(\Delta L \approx -\eta \left\| \frac{\partial L}{\partial W} \right\|_F\)</span></li>
+</ul>
+<p>现在，我们使用弗罗贝尼乌斯范数来分析 <code>Muon</code> 的学习率缩放规律：</p>
+<ol type="1">
+<li><strong>输出层 (<span class="math inline">\(W_{out}\)</span>)</strong>:
+<ul>
+<li>梯度 <span class="math inline">\(\frac{\partial L}{\partial W_{out}}\)</span> 的元素RMS为 <span class="math inline">\(O(1)\)</span>。</li>
+<li><span class="math inline">\(\left\| \frac{\partial L}{\partial W_{out}} \right\|_F\)</span> 是 <span class="math inline">\(d_{out} \times d\)</span> 个 <span class="math inline">\(O(1)\)</span> 元素的平方和的平方根，其量级为 <span class="math inline">\(\sqrt{O(d)} = O(\sqrt{d})\)</span>。</li>
+<li>为了使 <span class="math inline">\(\Delta L_{out} \approx -\eta_{out} \cdot O(\sqrt{d})\)</span> 保持为 <span class="math inline">\(O(1)\)</span>，学习率需满足： <strong><span class="math inline">\(\eta_{out} \propto 1/\sqrt{d}\)</span></strong>。</li>
+</ul></li>
+<li><strong>中间层 (<span class="math inline">\(W_k\)</span>)</strong>:
+<ul>
+<li>在 <span class="math inline">\(Var(W_{out}) \propto 1/d^2\)</span> 的假设下，梯度 <span class="math inline">\(\frac{\partial L}{\partial W_k}\)</span> 的元素RMS为 <span class="math inline">\(O(1/d)\)</span>。</li>
+<li><span class="math inline">\(\left\| \frac{\partial L}{\partial W_k} \right\|_F\)</span> 是 <span class="math inline">\(d^2\)</span> 个 <span class="math inline">\(O(1/d^2)\)</span> 元素的平方和的平方根，其量级为 <span class="math inline">\(\sqrt{d^2 \cdot O(1/d^2)} = \sqrt{O(1)} = O(1)\)</span>。</li>
+<li>因此，学习率无需随尺度改变： <strong><span class="math inline">\(\eta_k \propto 1\)</span></strong> (常数)。</li>
+</ul></li>
+<li><strong>输入层 (<span class="math inline">\(W_{in}\)</span>)</strong>:
+<ul>
+<li>梯度 <span class="math inline">\(\frac{\partial L}{\partial W_{in}}\)</span> 的元素RMS同样为 <span class="math inline">\(O(1/d)\)</span>。</li>
+<li><span class="math inline">\(\left\| \frac{\partial L}{\partial W_{in}} \right\|_F\)</span> 是 <span class="math inline">\(d \times d_{in}\)</span> 个 <span class="math inline">\(O(1/d^2)\)</span> 元素的平方和的平方根，其量级为 <span class="math inline">\(\sqrt{d \cdot O(1/d^2)} = \sqrt{O(1/d)} = O(1/\sqrt{d})\)</span>。</li>
+<li>为了抵消这个影响，学习率反而需要放大： <strong><span class="math inline">\(\eta_{in} \propto \sqrt{d}\)</span></strong>。</li>
+</ul></li>
+</ol>
+<p><em>(注：这里的 <code>Muon</code> 分析沿用了“<span class="math inline">\(Var(W_{out}) \propto 1/d^2\)</span>”的结论，该结论的严格推导依赖于特征更新稳定性的约束。然而，该约束本身可能基于一个“更新量是逐元素的”假设，而 <code>Muon</code> 并非如此。因此，这里的分析是一种简化和类比，而非严格推导。)</em></p>
+</section>
+</section>
+<section id="结论汇总与展望" class="level3">
+<h3 class="anchored" data-anchor-id="结论汇总与展望">5. 结论汇总与展望</h3>
+<section id="结论汇总" class="level4">
+<h4 class="anchored" data-anchor-id="结论汇总">5.1 结论汇总</h4>
+<p>我们将上述所有结论汇总在下表中，需要强调的是，表中的关系都是“正比于”(<span class="math inline">\(\propto\)</span>)，而非“等于”。</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">参数</th>
+<th style="text-align: left;">初始化/学习率</th>
+<th style="text-align: center;"><code>SGD</code></th>
+<th style="text-align: center;"><code>Adam</code></th>
+<th style="text-align: center;"><code>Muon</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong><span class="math inline">\(W_{in}\)</span></strong></td>
+<td style="text-align: left;">方差</td>
+<td style="text-align: center;"><span class="math inline">\(1/d_{in}\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1/d_{in}\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1/d_{in}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">学习率</td>
+<td style="text-align: center;"><span class="math inline">\(\propto d\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\propto 1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\propto \sqrt{d}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><span class="math inline">\(W_k\)</span></strong></td>
+<td style="text-align: left;">方差</td>
+<td style="text-align: center;"><span class="math inline">\(1/d\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1/d\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1/d\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">学习率</td>
+<td style="text-align: center;"><span class="math inline">\(\propto 1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\propto 1/d\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\propto 1\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong><span class="math inline">\(W_{out}\)</span></strong></td>
+<td style="text-align: left;">方差</td>
+<td style="text-align: center;"><span class="math inline">\(1/d^2\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1/d^2\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(1/d^2\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">学习率</td>
+<td style="text-align: center;"><span class="math inline">\(\propto 1/d\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\propto 1/d\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(\propto 1/\sqrt{d}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>在实践中，可以根据需求对这些规则进行微调。例如，当使用 <code>Muon</code> 优化器时，我们可能只在中间层使用它，而在输入和输出层仍然使用 <code>Adam</code>。这将导致学习率的缩放规则发生相应的变化。</p>
+</section>
+<section id="文章小结与展望" class="level4">
+<h4 class="anchored" data-anchor-id="文章小结与展望">5.2 文章小结与展望</h4>
+<p>本文以尽可能简明清晰的方式介绍了μP（Maximal Update Parametrization），这是一套旨在研究超参数跨模型尺度迁移规律的理论框架。基于μP，我们可以在小模型上以相对较小的成本仔细搜索超参数（主要是学习率和初始化方案），然后将这些规律迁移到大模型上，从而显著降低大模型的训练成本。</p>
+<p>客观来讲，这里的介绍和分析还比较初步。例如，我们忽略了偏置项（Bias）的分析，没有评估结论在 <code>MLP</code> 以外架构（如 <code>Transformer</code>）的通用性，也没有仔细考虑归一化层（Normalization）和残差连接（Residual Connection）的作用。</p>
+<p>个人认为，其中最关键的待分析项是归一化层和残差连接。特别是归一化层，它能够在很大程度上解耦网络稳定性和权重初始化之间的强绑定关系，从而为参数化方案带来更大的自由度和可能性。这些都为未来的研究留下了广阔的空间。</p>
 
 
 </section>
