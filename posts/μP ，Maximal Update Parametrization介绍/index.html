@@ -184,8 +184,6 @@ window.Quarto = {
 
 
 
-<p>好的，我们来对您的博客内容进行补充和完善。</p>
-<hr>
 <p>由于计算成本和计算规模的原因，我们不可能在大型的LLM模型上基于几万张卡做参数调优，并且过大的参数空间，也不可能消耗这么大资源做参数搜索。因此，是否存在一种技术可以指导从小型模型的参数调整到超大的模型呢？答案是肯定的，今天就来介绍一篇论文 (<a href="https://arxiv.org/pdf/2203.03466">Tensor Programs V: Tuning Large Neural Networks via Zero-Shot Hyperparameter Transfer</a>)。</p>
 <p>首先定义：<strong>μP (Maximal Update Parametrization)</strong> 是研究超参数随模型尺度变换的规律。即在一个小模型上搜索最优的超参数组合，然后迁移到大模型上，这就是μP的使用场景和使用方法。</p>
 <p>推导该规律的核心思想，是让模型的以下几个方面<strong>不</strong>随着模型尺度的变化而发生明显变化：</p>
@@ -228,14 +226,27 @@ window.Quarto = {
 </section>
 <section id="结论一" class="level3">
 <h3 class="anchored" data-anchor-id="结论一">结论一</h3>
-<p>要保证前向传播的稳定性，权重初始化应满足其<strong>方差与输入神经元数量 <span class="math inline">\(d_{in}\)</span> 成反比</strong>。具体来说： * 对于线性或Sigmoid/Tanh等激活函数，应采用 LeCun 初始化，使方差为 <span class="math inline">\(\frac{1}{d_{in}}\)</span>。 * 对于ReLU及其变种激活函数，应采用 Kaiming 初始化，使方差为 <span class="math inline">\(\frac{2}{d_{in}}\)</span>。</p>
+<p>要保证前向传播的稳定性，权重初始化应满足其<strong>方差与输入神经元数量 <span class="math inline">\(d_{in}\)</span> 成反比</strong>。具体来说：</p>
+<ul>
+<li><p>对于线性或Sigmoid/Tanh等激活函数，应采用 LeCun 初始化，使方差为 <span class="math inline">\(\frac{1}{d_{in}}\)</span>。</p></li>
+<li><p>对于ReLU及其变种激活函数，应采用 Kaiming 初始化，使方差为 <span class="math inline">\(\frac{2}{d_{in}}\)</span>。</p></li>
+</ul>
 </section>
 <section id="反向传播中梯度的尺度" class="level3">
 <h3 class="anchored" data-anchor-id="反向传播中梯度的尺度">2. 反向传播中梯度的尺度</h3>
 <p>在前向传播中，我们关心的是激活值（<span class="math inline">\(Y\)</span>）的尺度稳定性。在反向传播中，我们关心的则是梯度（<span class="math inline">\(\frac{\partial L}{\partial X}\)</span>）的尺度稳定性，即从后一层传到前一层的梯度，其尺度不应随网络宽度变化。</p>
-<p>我们首先写出梯度计算的核心公式。假设 <span class="math inline">\(Y = \phi(WX)\)</span>，根据链式法则，我们有： * <strong>参数的梯度</strong>： <span class="math inline">\(\frac{\partial L}{\partial W} = \frac{\partial L}{\partial Y} \frac{\partial Y}{\partial W} = \left( \frac{\partial L}{\partial Y} \otimes \phi'(WX) \right) X^\top\)</span> * <strong>向前传播的梯度</strong>： <span class="math inline">\(\frac{\partial L}{\partial X} = \frac{\partial L}{\partial Y} \frac{\partial Y}{\partial X} = W^\top \left( \frac{\partial L}{\partial Y} \otimes \phi'(WX) \right)\)</span> 其中，<span class="math inline">\(\otimes\)</span> 是哈达玛积（element-wise product），<span class="math inline">\(\phi'\)</span> 是激活函数 <span class="math inline">\(\phi\)</span> 的导函数。 看到 <span class="math inline">\(\frac{\partial L}{\partial X}\)</span>（损失对输入的梯度）可能会让人困惑：我们的目标是更新权重 <span class="math inline">\(W\)</span>，为什么还要计算对输入 <span class="math inline">\(X\)</span> 的梯度呢？ 在一个多层神经网络中，为了求得更深层（例如第 <span class="math inline">\(k\)</span> 层）的权重梯度 <span class="math inline">\(\frac{\partial L}{\partial W_k}\)</span>，我们需要将梯度从输出层一步步地传回来。 根据链式法则，计算第 <span class="math inline">\(k\)</span> 层权重梯度的公式可以分解为： <span class="math display">\[
+<p>我们首先写出梯度计算的核心公式。假设 <span class="math inline">\(Y = \phi(WX)\)</span>，根据链式法则，我们有：</p>
+<ul>
+<li><p><strong>参数的梯度</strong>： <span class="math inline">\(\frac{\partial L}{\partial W} = \frac{\partial L}{\partial Y} \frac{\partial Y}{\partial W} = \left( \frac{\partial L}{\partial Y} \otimes \phi'(WX) \right) X^\top\)</span></p></li>
+<li><p><strong>向前传播的梯度</strong>： <span class="math inline">\(\frac{\partial L}{\partial X} = \frac{\partial L}{\partial Y} \frac{\partial Y}{\partial X} = W^\top \left( \frac{\partial L}{\partial Y} \otimes \phi'(WX) \right)\)</span></p></li>
+</ul>
+<p>其中，<span class="math inline">\(\otimes\)</span> 是哈达玛积（element-wise product），<span class="math inline">\(\phi'\)</span> 是激活函数 <span class="math inline">\(\phi\)</span> 的导函数。 看到 <span class="math inline">\(\frac{\partial L}{\partial X}\)</span>（损失对输入的梯度）可能会让人困惑：我们的目标是更新权重 <span class="math inline">\(W\)</span>，为什么还要计算对输入 <span class="math inline">\(X\)</span> 的梯度呢？ 在一个多层神经网络中，为了求得更深层（例如第 <span class="math inline">\(k\)</span> 层）的权重梯度 <span class="math inline">\(\frac{\partial L}{\partial W_k}\)</span>，我们需要将梯度从输出层一步步地传回来。 根据链式法则，计算第 <span class="math inline">\(k\)</span> 层权重梯度的公式可以分解为： <span class="math display">\[
 \frac{\partial L}{\partial W_k} = \frac{\partial L}{\partial Y_k} \frac{\partial Y_k}{\partial W_k}
-\]</span> 其中： * <span class="math inline">\(\frac{\partial Y_k}{\partial W_k}\)</span> 是<strong>本层</strong>的“局部梯度”，它只依赖于本层的输入 <span class="math inline">\(X_k\)</span> 和权重 <span class="math inline">\(W_k\)</span>，计算起来很简单。 * <span class="math inline">\(\frac{\partial L}{\partial Y_k}\)</span> 是从<strong>后续所有层</strong>传递到本层的“上游梯度”。这个梯度我们无法直接得到。 这里的关键在于，第 <span class="math inline">\(k\)</span> 层的输出 <span class="math inline">\(Y_k\)</span> 正是第 <span class="math inline">\(k+1\)</span> 层的输入 <span class="math inline">\(X_{k+1}\)</span>。因此，我们需要的“上游梯度” <span class="math inline">\(\frac{\partial L}{\partial Y_k}\)</span>，其实就是后一层计算出的<strong>对它输入的梯度</strong> <span class="math inline">\(\frac{\partial L}{\partial X_{k+1}}\)</span>。 <span class="math display">\[
+\]</span> 其中： * <span class="math inline">\(\frac{\partial Y_k}{\partial W_k}\)</span> 是<strong>本层</strong>的“局部梯度”，它只依赖于本层的输入 <span class="math inline">\(X_k\)</span> 和权重 <span class="math inline">\(W_k\)</span>，计算起来很简单。</p>
+<ul>
+<li><span class="math inline">\(\frac{\partial L}{\partial Y_k}\)</span> 是从<strong>后续所有层</strong>传递到本层的“上游梯度”。这个梯度我们无法直接得到。</li>
+</ul>
+<p>这里的关键在于，第 <span class="math inline">\(k\)</span> 层的输出 <span class="math inline">\(Y_k\)</span> 正是第 <span class="math inline">\(k+1\)</span> 层的输入 <span class="math inline">\(X_{k+1}\)</span>。因此，我们需要的“上游梯度” <span class="math inline">\(\frac{\partial L}{\partial Y_k}\)</span>，其实就是后一层计算出的<strong>对它输入的梯度</strong> <span class="math inline">\(\frac{\partial L}{\partial X_{k+1}}\)</span>。 <span class="math display">\[
 \frac{\partial L}{\partial Y_k} = \frac{\partial L}{\partial X_{k+1}}
 \]</span> 所以，每一层计算 <span class="math inline">\(\frac{\partial L}{\partial X}\)</span> 的目的，就是为了将这个梯度作为“误差信号”传递给它的前一层，使得前一层能够完成其自身权重梯度的计算。</p>
 <p>为了进行尺度分析，我们需要关注这些运算如何随网络宽度（<span class="math inline">\(d_{in}, d_{out}\)</span>）变化。注意到一个关键事实：我们常用的激活函数（如ReLU, Tanh, Sigmoid），其导函数 <span class="math inline">\(\phi'\)</span> 的输出值通常被一个与模型尺度无关的常数所界定（例如，ReLU的导数是0或1）。因此，在分析数量级时，我们可以认为 <span class="math inline">\(\phi'(XW)\)</span> 这一项是 <span class="math inline">\(O(1)\)</span> 的，它不引入与 <span class="math inline">\(d_{in}\)</span> 或 <span class="math inline">\(d_{out}\)</span> 相关的缩放因子。</p>
