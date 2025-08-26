@@ -242,9 +242,10 @@ window.Quarto = {
 </ul>
 <p>其中，<span class="math inline">\(\otimes\)</span> 是哈达玛积（element-wise product），<span class="math inline">\(\phi'\)</span> 是激活函数 <span class="math inline">\(\phi\)</span> 的导函数。 看到 <span class="math inline">\(\frac{\partial L}{\partial X}\)</span>（损失对输入的梯度）可能会让人困惑：我们的目标是更新权重 <span class="math inline">\(W\)</span>，为什么还要计算对输入 <span class="math inline">\(X\)</span> 的梯度呢？ 在一个多层神经网络中，为了求得更深层（例如第 <span class="math inline">\(k\)</span> 层）的权重梯度 <span class="math inline">\(\frac{\partial L}{\partial W_k}\)</span>，我们需要将梯度从输出层一步步地传回来。 根据链式法则，计算第 <span class="math inline">\(k\)</span> 层权重梯度的公式可以分解为： <span class="math display">\[
 \frac{\partial L}{\partial W_k} = \frac{\partial L}{\partial Y_k} \frac{\partial Y_k}{\partial W_k}
-\]</span> 其中： * <span class="math inline">\(\frac{\partial Y_k}{\partial W_k}\)</span> 是<strong>本层</strong>的“局部梯度”，它只依赖于本层的输入 <span class="math inline">\(X_k\)</span> 和权重 <span class="math inline">\(W_k\)</span>，计算起来很简单。</p>
+\]</span> 其中：</p>
 <ul>
-<li><span class="math inline">\(\frac{\partial L}{\partial Y_k}\)</span> 是从<strong>后续所有层</strong>传递到本层的“上游梯度”。这个梯度我们无法直接得到。</li>
+<li><p><span class="math inline">\(\frac{\partial Y_k}{\partial W_k}\)</span> 是<strong>本层</strong>的“局部梯度”，它只依赖于本层的输入 <span class="math inline">\(X_k\)</span> 和权重 <span class="math inline">\(W_k\)</span>，计算起来很简单。</p></li>
+<li><p><span class="math inline">\(\frac{\partial L}{\partial Y_k}\)</span> 是从<strong>后续所有层</strong>传递到本层的“上游梯度”。这个梯度我们无法直接得到。</p></li>
 </ul>
 <p>这里的关键在于，第 <span class="math inline">\(k\)</span> 层的输出 <span class="math inline">\(Y_k\)</span> 正是第 <span class="math inline">\(k+1\)</span> 层的输入 <span class="math inline">\(X_{k+1}\)</span>。因此，我们需要的“上游梯度” <span class="math inline">\(\frac{\partial L}{\partial Y_k}\)</span>，其实就是后一层计算出的<strong>对它输入的梯度</strong> <span class="math inline">\(\frac{\partial L}{\partial X_{k+1}}\)</span>。 <span class="math display">\[
 \frac{\partial L}{\partial Y_k} = \frac{\partial L}{\partial X_{k+1}}
@@ -257,7 +258,11 @@ window.Quarto = {
 <p>这与前向传播 <span class="math inline">\(Y = XW\)</span> 的结构惊人地相似。在前向传播中，为了维持 <span class="math inline">\(Var(Y) \approx Var(X)\)</span>，我们要求 <span class="math inline">\(Var(W) = \frac{c}{d_{in}}\)</span>。同理，为了在反向传播中维持梯度尺度的稳定，即 <span class="math inline">\(Var(\frac{\partial L}{\partial X}) \approx Var(\frac{\partial L}{\partial Y})\)</span>，我们需要对参与运算的矩阵 <span class="math inline">\(W^\top\)</span> 进行类似的约束。</p>
 <p>在 <span class="math inline">\(\frac{\partial L}{\partial X} \sim W^\top\frac{\partial L}{\partial Y}\)</span> 这个运算中，“输入”的维度是 <span class="math inline">\(d_{out}\)</span>。因此，为了保持方差稳定，我们需要 <span class="math inline">\(W^\top\)</span> 的权重方差满足 <span class="math inline">\(Var(W_{ji}) = \frac{c}{d_{out}}\)</span>，这等价于 <span class="math inline">\(Var(W_{ij}) = \frac{c}{d_{out}}\)</span>。</p>
 <p>这就引出了 <strong>Fan-out 初始化</strong>：“权重从均值为0、方差正比于 <span class="math inline">\(\frac{1}{d_{out}}\)</span> 的分布中随机初始化。”</p>
-<p>此时，一个矛盾出现了： * <strong>前向传播</strong>要求 <span class="math inline">\(Var(W) \propto \frac{1}{d_{in}}\)</span> (Fan-in) * <strong>反向传播</strong>要求 <span class="math inline">\(Var(W) \propto \frac{1}{d_{out}}\)</span> (Fan-out)</p>
+<p>此时，一个矛盾出现了：</p>
+<ul>
+<li><p><strong>前向传播</strong>要求 <span class="math inline">\(Var(W) \propto \frac{1}{d_{in}}\)</span> (Fan-in)</p></li>
+<li><p><strong>反向传播</strong>要求 <span class="math inline">\(Var(W) \propto \frac{1}{d_{out}}\)</span> (Fan-out)</p></li>
+</ul>
 <p>当 <span class="math inline">\(d_{in} \neq d_{out}\)</span> 时，这两个要求无法同时满足。为了解决这个冲突，Glorot和Bengio提出了一个折中策略：</p>
 <p><strong>Xavier (Glorot) 初始化</strong>：“权重从均值为0、方差为 <span class="math inline">\(\frac{2}{d_{in} + d_{out}}\)</span> 的分布中随机初始化。”</p>
 <p>这种方法也被称为 “fan_avg 初始化”，因为它对 fan-in 和 fan-out 取了算术平均。Xavier 初始化试图同时兼顾前向和反向的稳定性，但也可以说两者都没能完美兼顾。</p>
@@ -266,7 +271,7 @@ window.Quarto = {
 <section id="训练过程中参数更新的尺度" class="level3">
 <h3 class="anchored" data-anchor-id="训练过程中参数更新的尺度">3. 训练过程中参数更新的尺度</h3>
 <p>前面我们分析了如何通过特定的初始化策略来稳定前向传播的激活值尺度和反向传播的梯度尺度。然而，这仅仅保证了在训练开始的“第0步”模型的初始状态是稳定的。</p>
-<p>在训练过程中，参数 <code>W</code> 会被不断更新。一个理想的参数化方案应该保证<strong>参数更新的幅度</strong>本身也具有尺度不变性，从而使得在小模型上调好的最优学习率等超参数可以被成功迁移到大模型上。要实现这一点，我们就必须分析损失函数的增量 <code>ΔL</code>。</p>
+<p>在训练过程中，参数 <span class="math inline">\(W\)</span> 会被不断更新。一个理想的参数化方案应该保证<strong>参数更新的幅度</strong>本身也具有尺度不变性，从而使得在小模型上调好的最优学习率等超参数可以被成功迁移到大模型上。要实现这一点，我们就必须分析损失函数的增量 <span class="math inline">\(ΔL\)</span>。</p>
 <section id="损失增量与学习率的关系" class="level4">
 <h4 class="anchored" data-anchor-id="损失增量与学习率的关系">3.1 损失增量与学习率的关系</h4>
 <p>有了前向和反向传播的尺度分析，我们就可以进一步探究损失函数（Loss）的增量，并理解为何学习率需要随模型尺度进行调整。</p>
@@ -287,61 +292,81 @@ window.Quarto = {
 <p>最终，我们得到的结论是，损失增量的尺度为：</p>
 <p><span class="math inline">\(\Delta L \sim O(\eta \cdot d_{out} \cdot d_{in} )\)</span></p>
 <p>这个结论至关重要。它表明，如果我们保持学习率 <span class="math inline">\(\eta\)</span> 不变，并将模型从小尺度（小的 <span class="math inline">\(d_{out}, d_{in}\)</span>）放大到大尺度（大的 <span class="math inline">\(d_{out}, d_{in}\)</span>），那么每一步的损失更新量 <span class="math inline">\(\Delta L\)</span> 将会爆炸式增长。这会导致训练过程极不稳定，完全无法复现小模型上的收敛轨迹，甚至因为“步子迈得太大”而导致模型无法收敛。</p>
-<p>一个自然的想法是：让学习率 <span class="math inline">\(\eta \propto \frac{1}{d_{in}d_{out}}\)</span> 来抵消这个缩放效应。这个思路已经非常接近 μP 的核心思想了。然而，实际情况更为复杂，因为我们之前讨论过，由于 fan-in 和 fan-out 的矛盾，我们无法同时完美地稳定前向和反向传播，这使得“每个元素都是 <span class="math inline">\(O(1)\)</span>”的这个假设在标准参数化（Standard Parametrization, SP）下并不完全成立，从而需要更精细的调整策略。</p>
+<p>一个自然的想法是：让学习率 <span class="math inline">\(\eta \propto \frac{1}{d_{in}d_{out}}\)</span> 来抵消这个缩放效应。然而，实际情况更为复杂，由于 fan-in 和 fan-out 的矛盾，我们无法同时完美地稳定前向和反向传播，这使得“每个元素都是 <span class="math inline">\(O(1)\)</span>”的这个假设在标准参数化（Standard Parametrization, SP）下并不完全成立，从而需要更精细的调整策略。</p>
 </section>
 <section id="建立一个具体的分析模型" class="level4">
 <h4 class="anchored" data-anchor-id="建立一个具体的分析模型">3.2 建立一个具体的分析模型</h4>
-<p>为了更精确地研究超参数随模型尺度的缩放规律，我们定义一个具体的模型簇。假设我们的任务是训练一个 <span class="math inline">\(\mathbb{R}^{d_{in}} \mapsto \mathbb{R}^{d_{out}}\)</span> 的模型，其中 <code>d_in</code> 和 <code>d_out</code> 由数据决定，是固定不变的常数。我们可以改变的是模型的中层宽度。</p>
-<p>我们考虑如下的模型结构： <span class="math inline">\(Y_{in} = W_{in} X\)</span> <span class="math inline">\(Y_{out} = \text{NN}(Y_{in}, \Theta)\)</span> <span class="math inline">\(Z = W_{out} Y_{out}\)</span></p>
-<p>其中： * <code>X</code> 是输入，维度为 <code>d_in × b</code> (b是批大小)。 * <code>W_in</code> 是输入层权重，维度为 <code>d × d_in</code>。 * <code>Y_in</code> 是输入层激活值，维度为 <code>d × b</code>。 * <code>NN</code> 是任意一个 <span class="math inline">\(\mathbb{R}^{d} \mapsto \mathbb{R}^{d}\)</span> 的神经网络，其参数为 <code>Θ</code>。 * <code>Y_out</code> 是 <code>NN</code> 的输出，维度为 <code>d × b</code>。 * <code>W_out</code> 是输出层权重，维度为 <code>d_out × d</code>。 * <code>Z</code> 是最终输出，维度为 <code>d_out × b</code>。 * <code>d</code> 是我们常说的隐藏层维度（hidden size），也是我们可以随意调大以提升模型规模的<strong>关键尺度变量</strong>。 * μP 的目标就是研究最优超参数（如学习率）关于 <code>d</code> 的变化规律。</p>
-<p>更具体地，我们假设 <code>NN</code> 是一个 <code>K</code> 层的 MLP： <span class="math inline">\(H_0 = Y_{in}\)</span> <span class="math inline">\(H_{k+1} = \phi(W_{k+1} H_k)\)</span> for <span class="math inline">\(k=0, \dots, K-1\)</span> <span class="math inline">\(Y_{out} = H_K\)</span></p>
-<p>这里 <code>Θ = {W_1, ..., W_K}</code>，且所有的 <code>W_k</code> 都是 <code>d × d</code> 的方阵。对于方阵，fan-in 和 fan-out 初始化是等价的，因此可以同时满足前向和反向的稳定性要求，确保 <code>NN</code> 内部是尺度稳定的。</p>
+<p>为了更精确地研究超参数随模型尺度的缩放规律，我们定义一个具体的模型簇。假设我们的任务是训练一个 <span class="math inline">\(\mathbb{R}^{d_{in}} \mapsto \mathbb{R}^{d_{out}}\)</span> 的模型，其中 <span class="math inline">\(d_{in}\)</span> 和 <span class="math inline">\(d_{out}\)</span> 由数据决定，是固定不变的常数。我们可以改变的是模型的中层宽度。</p>
+<p>我们考虑如下的模型结构：</p>
+<p><span class="math inline">\(Y_{in} = W_{in} X\)</span></p>
+<p><span class="math inline">\(Y_{out} = \text{NN}(Y_{in}, \Theta)\)</span></p>
+<p><span class="math inline">\(Z = W_{out} Y_{out}\)</span></p>
+<p>其中：</p>
+<ul>
+<li><p><span class="math inline">\(X\)</span> 是输入，维度为 <span class="math inline">\(d_{in} × b\)</span> (b是批大小)。</p></li>
+<li><p><span class="math inline">\(W_{in}\)</span> 是输入层权重，维度为 <span class="math inline">\(d × d_{in}\)</span>。</p></li>
+<li><p><span class="math inline">\(Y_{in}\)</span> 是输入层激活值，维度为 <span class="math inline">\(d × b\)</span>。</p></li>
+<li><p><span class="math inline">\(NN\)</span> 是任意一个 <span class="math inline">\(\mathbb{R}^{d} \mapsto \mathbb{R}^{d}\)</span> 的神经网络，其参数为 <span class="math inline">\(Θ\)</span>。</p></li>
+<li><p><span class="math inline">\(Y_{out}\)</span> 是 <span class="math inline">\(NN\)</span> 的输出，维度为 <span class="math inline">\(d × b\)</span>。</p></li>
+<li><p><span class="math inline">\(W_{out}\)</span> 是输出层权重，维度为 <span class="math inline">\(d_{out} × d\)</span>。</p></li>
+<li><p><span class="math inline">\(Z\)</span> 是最终输出，维度为 <span class="math inline">\(d_{out} × b\)</span>。</p></li>
+<li><p><span class="math inline">\(d\)</span> 是我们常说的隐藏层维度（hidden size），也是我们可以随意调大以提升模型规模的<strong>关键尺度变量</strong>。</p></li>
+<li><p>μP 的目标就是研究最优超参数（如学习率）关于 <span class="math inline">\(d\)</span> 的变化规律。</p></li>
+</ul>
+<p>更具体地，我们假设 <span class="math inline">\(NN\)</span> 是一个 <span class="math inline">\(K\)</span> 层的 MLP：</p>
+<p><span class="math inline">\(H_0 = Y_{in}\)</span></p>
+<p><span class="math inline">\(H_{k+1} = \phi(W_{k+1} H_k)\)</span> for <span class="math inline">\(k=0, \dots, K-1\)</span></p>
+<p><span class="math inline">\(Y_{out} = H_K\)</span></p>
+<p>这里 <span class="math inline">\(Θ = {W_1, ..., W_K}\)</span>，且所有的 <span class="math inline">\(W_k\)</span> 都是 <span class="math inline">\(d × d\)</span> 的方阵。对于方阵，fan-in 和 fan-out 初始化是等价的，因此可以同时满足前向和反向的稳定性要求，确保 <span class="math inline">\(NN\)</span> 内部是尺度稳定的。</p>
 </section>
 <section id="组装推导不同层的学习率缩放率" class="level4">
 <h4 class="anchored" data-anchor-id="组装推导不同层的学习率缩放率">3.3 组装：推导不同层的学习率缩放率</h4>
-<p>有了具体的模型后，我们可以分析不同部分参数（<code>W_in</code>, <code>Θ</code>, <code>W_out</code>）的梯度，并推导它们对应的学习率，目标是让每一部分的 <code>ΔL</code> 都保持 <code>O(1)</code>。</p>
-<p>梯度的近似表达式为： <span class="math inline">\(\frac{\partial L}{\partial W_{out}} = \frac{\partial L}{\partial Z} Y_{out}^\top\)</span> <span class="math inline">\(\frac{\partial L}{\partial W_k} \sim (\dots) H_k^\top\)</span> （省略了复杂的反向传播项） <span class="math inline">\(\frac{\partial L}{\partial W_{in}} = \frac{\partial L}{\partial Y_{in}} X^\top\)</span></p>
+<p>有了具体的模型后，我们可以分析不同部分参数（<span class="math inline">\(W_{in}\)</span>, <span class="math inline">\(Θ\)</span>, <span class="math inline">\(W_{out}\)</span>）的梯度，并推导它们对应的学习率，目标是让每一部分的 <span class="math inline">\(ΔL\)</span> 都保持 <span class="math inline">\(O(1)\)</span>。</p>
+<p>梯度的近似表达式为：</p>
+<p><span class="math inline">\(\frac{\partial L}{\partial W_{out}} = \frac{\partial L}{\partial Z} Y_{out}^\top\)</span></p>
+<p><span class="math inline">\(\frac{\partial L}{\partial W_k} \sim (\dots) H_k^\top\)</span> （省略了复杂的反向传播项）</p>
+<p><span class="math inline">\(\frac{\partial L}{\partial W_{in}} = \frac{\partial L}{\partial Y_{in}} X^\top\)</span></p>
 <p>现在，我们来观察规律并推导学习率的缩放法则：</p>
 <ol type="1">
-<li><strong>输出层 (W_out)</strong>：
+<li><strong>输出层 (W_{out})</strong>：
 <ul>
-<li><code>∂L/∂W_out</code> 是一个 <code>d_out × d</code> 的矩阵。</li>
-<li>由于 <code>Y_out</code> 和 <code>∂L/∂Z</code> 的元素尺度都是 <code>O(1)</code>，<code>∂L/∂W_out</code> 的元素尺度也是 <code>O(1)</code>。</li>
-<li><span class="math inline">\(\left\| \frac{\partial L}{\partial W_{out}} \right\|_F^2\)</span> 是 <code>d_out × d</code> 个 <code>O(1)</code> 元素的平方和。因为 <code>d_out</code> 是常数，所以其量级为 <code>O(d)</code>。</li>
-<li>为了使 <code>ΔL_out ≈ -η_out * O(d)</code> 保持为 <code>O(1)</code>，学习率必须满足： <strong><code>η_out ∝ 1/d</code></strong>。</li>
+<li><span class="math inline">\(∂L/∂W_{out}\)</span> 是一个 <span class="math inline">\(d_{out} × d\)</span> 的矩阵。</li>
+<li>由于 <span class="math inline">\(Y_{out}\)</span> 和 <span class="math inline">\(∂L/∂Z\)</span> 的元素尺度都是 <span class="math inline">\(O(1)\)</span>，<span class="math inline">\(∂L/∂W_{out}\)</span> 的元素尺度也是 <span class="math inline">\(O(1)\)</span>。</li>
+<li><span class="math inline">\(\left\| \frac{\partial L}{\partial W_{out}} \right\|_F^2\)</span> 是 <span class="math inline">\(d_{out} × d\)</span> 个 <span class="math inline">\(O(1)\)</span> 元素的平方和。因为 <span class="math inline">\(d_{out}\)</span> 是常数，所以其量级为 <span class="math inline">\(O(d)\)</span>。</li>
+<li>为了使 <span class="math inline">\(ΔL_{out} ≈ -η_{out} * O(d)\)</span> 保持为 <span class="math inline">\(O(1)\)</span>，学习率必须满足： <strong><span class="math inline">\(η_{out} ∝ 1/d\)</span></strong>。</li>
 </ul></li>
 <li><strong>中间层 (W_k in Θ)</strong>：
 <ul>
-<li><code>∂L/∂W_k</code> 是一个 <code>d × d</code> 的方阵。</li>
-<li>这里，μP 提出一个关键操作：<strong>将 <code>W_out</code> 的初始化方差从 <code>O(1/d)</code> (fan-out) 调整为 <code>O(1/d²)</code></strong> (其合理性将在下一节解释)。</li>
-<li>在这个特殊设置下，可以推导出 <code>∂L/∂W_k</code> 的元素均方根(RMS)为 <code>O(1/d)</code>。</li>
-<li>因此，<span class="math inline">\(\left\| \frac{\partial L}{\partial W_k} \right\|_F^2\)</span> 是 <code>d²</code> 个 <code>O(1/d²)</code> 元素的平方和，其总量级为 <code>d² * O(1/d²) = O(1)</code>。</li>
-<li>为了使 <code>ΔL_k ≈ -η_k * O(1)</code> 保持为 <code>O(1)</code>，学习率<strong>无需随 <code>d</code> 变化</strong>： <strong><code>η_k ∝ 1</code> (常数)</strong>。</li>
+<li><span class="math inline">\(∂L/∂W_k\)</span> 是一个 <span class="math inline">\(d × d\)</span> 的方阵。</li>
+<li>这里，μP 提出一个关键操作：<strong>将 <span class="math inline">\(W_{out}\)</span> 的初始化方差从 <span class="math inline">\(O(1/d)\)</span> (fan-out) 调整为 <span class="math inline">\(O(1/d²)\)</span></strong> (其合理性将在下一节解释)。</li>
+<li>在这个特殊设置下，可以推导出 <span class="math inline">\(∂L/∂W_k\)</span> 的元素均方根(RMS)为 <span class="math inline">\(O(1/d)\)</span>。</li>
+<li>因此，<span class="math inline">\(\left\| \frac{\partial L}{\partial W_k} \right\|_F^2\)</span> 是 <span class="math inline">\(d²\)</span> 个 <span class="math inline">\(O(1/d²)\)</span> 元素的平方和，其总量级为 <span class="math inline">\(d² * O(1/d²) = O(1)\)</span>。</li>
+<li>为了使 <span class="math inline">\(ΔL_k ≈ -η_k * O(1)\)</span> 保持为 <span class="math inline">\(O(1)\)</span>，学习率<strong>无需随 <span class="math inline">\(d\)</span> 变化</strong>： <strong><span class="math inline">\(η_k ∝ 1\)</span> (常数)</strong>。</li>
 </ul></li>
-<li><strong>输入层 (W_in)</strong>：
+<li><strong>输入层 (W_{in})</strong>：
 <ul>
-<li><code>∂L/∂W_in</code> 是一个 <code>d × d_in</code> 的矩阵。</li>
-<li>与中间层类似，在 <code>W_out</code> 的新初始化下，<code>∂L/∂W_in</code> 的元素RMS也是 <code>O(1/d)</code>。</li>
-<li><span class="math inline">\(\left\| \frac{\partial L}{\partial W_{in}} \right\|_F^2\)</span> 是 <code>d × d_in</code> 个 <code>O(1/d²)</code> 元素的平方和。因为 <code>d_in</code> 是常数，所以其总量级为 <code>O(d * 1/d²) = O(1/d)</code>。</li>
-<li>为了使 <code>ΔL_in ≈ -η_in * O(1/d)</code> 保持为 <code>O(1)</code>，学习率必须放大以抵消衰减： <strong><code>η_in ∝ d</code></strong>。</li>
+<li><span class="math inline">\(∂L/∂W_{in}\)</span> 是一个 <span class="math inline">\(d × d_{in}\)</span> 的矩阵。</li>
+<li>与中间层类似，在 <span class="math inline">\(W_{out}\)</span> 的新初始化下，<span class="math inline">\(∂L/∂W_{in}\)</span> 的元素RMS也是 <span class="math inline">\(O(1/d)\)</span>。</li>
+<li><span class="math inline">\(\left\| \frac{\partial L}{\partial W_{in}} \right\|_F^2\)</span> 是 <span class="math inline">\(d × d_{in}\)</span> 个 <span class="math inline">\(O(1/d²)\)</span> 元素的平方和。因为 <span class="math inline">\(d_{in}\)</span> 是常数，所以其总量级为 <span class="math inline">\(O(d * 1/d²) = O(1/d)\)</span>。</li>
+<li>为了使 <span class="math inline">\(ΔL_{in} ≈ -η_{in} * O(1/d)\)</span> 保持为 <span class="math inline">\(O(1)\)</span>，学习率必须放大以抵消衰减： <strong><span class="math inline">\(η_{in} ∝ d\)</span></strong>。</li>
 </ul></li>
 </ol>
 </section>
 <section id="补充约束特征更新的稳定性" class="level4">
 <h4 class="anchored" data-anchor-id="补充约束特征更新的稳定性">3.4 补充约束：特征更新的稳定性</h4>
-<p>上述推导依赖于一个关键但尚未证明的假设：我们将 <code>W_out</code> 的初始化方差设为 <code>∝ 1/d²</code>。为什么要做这个看似武断的调整？</p>
-<p>原因是，仅仅要求 <code>ΔL = O(1)</code> 这个宏观指标是不够的，它允许多种解。例如，如果 <code>Var(W_out) ∝ 1/d</code>，我们可以通过统一调整所有层的学习率 <code>η ∝ 1/d</code> 同样使 <code>ΔL</code> 稳定。</p>
+<p>上述推导依赖于一个关键但尚未证明的假设：我们将 <span class="math inline">\(W_{out}\)</span> 的初始化方差设为 <span class="math inline">\(∝ 1/d²\)</span>。为什么要做这个看似武断的调整？</p>
+<p>原因是，仅仅要求 <span class="math inline">\(ΔL = O(1)\)</span> 这个宏观指标是不够的，它允许多种解。例如，如果 <span class="math inline">\(Var(W_{out}) ∝ 1/d\)</span>，我们可以通过统一调整所有层的学习率 <span class="math inline">\(η ∝ 1/d\)</span> 同样使 <span class="math inline">\(ΔL\)</span> 稳定。</p>
 <p>为了得到唯一的缩放法则，我们需要引入一个更强的、来自模型内部的约束：<strong>模型每一层输出的特征（激活值）的变化量也应具有尺度不变性。</strong></p>
-<p>考虑中间层 <code>H_k = \phi(W_k H_{k-1})</code>。当参数 <code>W_k</code> 更新为 <code>W_k + ΔW_k</code> 时，它带来的输出变化（忽略激活函数和输入变化的影响）约为：</p>
+<p>考虑中间层 <span class="math inline">\(H_k = \phi(W_k H_{k-1})\)</span>。当参数 <span class="math inline">\(W_k\)</span> 更新为 <span class="math inline">\(W_k + ΔW_k\)</span> 时，它带来的输出变化（忽略激活函数和输入变化的影响）约为：</p>
 <p><span class="math inline">\(\Delta H_k \approx (W_k + \Delta W_k)H_{k-1} - W_k H_{k-1} = (\Delta W_k) H_{k-1}\)</span></p>
 <ul>
-<li><code>ΔW_k</code> 的维度是 <code>d × d</code>，<code>H_{k-1}</code> 的维度是 <code>d × b</code>。</li>
-<li><code>ΔH_k</code> 中每个元素的计算，都涉及到 <code>d</code> 维向量的内积（<code>ΔW_k</code> 的某一行与 <code>H_{k-1}</code> 的某一列）。</li>
-<li>与初始化时权重和输入独立不同，<code>ΔW_k</code> 是梯度的函数，与 <code>H_{k-1}</code> 相关。一个 <code>d</code> 维内积操作会引入一个与 <code>d</code> 相关的尺度因子。</li>
+<li><span class="math inline">\(ΔW_k\)</span> 的维度是 <span class="math inline">\(d × d\)</span>，<span class="math inline">\(H_{k-1}\)</span> 的维度是 <span class="math inline">\(d × b\)</span>。</li>
+<li><span class="math inline">\(ΔH_k\)</span> 中每个元素的计算，都涉及到 <span class="math inline">\(d\)</span> 维向量的内积（<span class="math inline">\(ΔW_k\)</span> 的某一行与 <span class="math inline">\(H_{k-1}\)</span> 的某一列）。</li>
+<li>与初始化时权重和输入独立不同，<span class="math inline">\(ΔW_k\)</span> 是梯度的函数，与 <span class="math inline">\(H_{k-1}\)</span> 相关。一个 <span class="math inline">\(d\)</span> 维内积操作会引入一个与 <span class="math inline">\(d\)</span> 相关的尺度因子。</li>
 </ul>
-<p>为了让特征更新 <code>ΔH_k</code> 的尺度保持稳定（即 <code>RMS(ΔH_k) = O(1)</code>），我们必须对参数更新量 <code>ΔW_k</code> 的尺度施加约束。可以推导，这要求：</p>
-<p><strong><code>RMS(ΔW_k) = O(1/d)</code></strong></p>
-<p>这个对参数更新量本身提出的新约束，当它与 <code>ΔL = O(1)</code> 的要求相结合时，便可以唯一地确定之前章节中提出的初始化和学习率缩放方案是正确的选择。它从根本上解释了为什么我们需要对 <code>W_out</code> 进行特殊的 <code>Var(W_out) ∝ 1/d²</code> 初始化，从而确保整个训练动态（而不仅是损失下降）在不同模型尺度下保持一致。</p>
+<p>为了让特征更新 <span class="math inline">\(ΔH_k\)</span> 的尺度保持稳定（即 <span class="math inline">\(RMS(ΔH_k) = O(1)\)</span>），我们必须对参数更新量 <span class="math inline">\(ΔW_k\)</span> 的尺度施加约束。可以推导，这要求：</p>
+<p><strong><span class="math inline">\(RMS(ΔW_k) = O(1/d)\)</span></strong></p>
+<p>这个对参数更新量本身提出的新约束，当它与 <span class="math inline">\(ΔL = O(1)\)</span> 的要求相结合时，便可以唯一地确定之前章节中提出的初始化和学习率缩放方案是正确的选择。它从根本上解释了为什么我们需要对 <span class="math inline">\(W_{out}\)</span> 进行特殊的 <span class="math inline">\(Var(W_{out}) ∝ 1/d²\)</span> 初始化，从而确保整个训练动态（而不仅是损失下降）在不同模型尺度下保持一致。</p>
 
 
 </section>
