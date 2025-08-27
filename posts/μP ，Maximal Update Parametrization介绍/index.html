@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="杨诚操">
-<meta name="dcterms.date" content="2025-08-20">
+<meta name="dcterms.date" content="2025-08-25">
 
 <title>μP ，Maximal Update Parametrization介绍 – Mythos</title>
 <style>
@@ -165,7 +165,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">August 20, 2025</p>
+        <p class="date">August 25, 2025</p>
       </div>
     </div>
     
@@ -284,7 +284,7 @@ window.Quarto = {
 <p><span class="math inline">\(\Delta L \sim -\eta \left\| \frac{\partial L}{\partial Y} X^\top  \right\|_F^2\)</span></p>
 <p>这个式子揭示了为什么同一个学习率 <span class="math inline">\(\eta\)</span> 不能跨模型尺度使用。我们可以分解来看：</p>
 <ol type="1">
-<li><strong>维度分析</strong>：假设批大小为 <span class="math inline">\(b\)</span>，那么 <span class="math inline">\(X^\top\)</span> 是一个 <span class="math inline">\(d_{in} \times b\)</span> 的矩阵，而 <span class="math inline">\(\frac{\partial L}{\partial Y}\)</span> 是一个 <span class="math inline">\(b \times d_{out}\)</span> 的矩阵。它们的乘积 <span class="math inline">\(\frac{\partial L}{\partial Y} X^\top  是一个\)</span>d_{out} d_{in}$ 的矩阵。</li>
+<li><strong>维度分析</strong>：假设批大小为 <span class="math inline">\(b\)</span>，那么 <span class="math inline">\(X^\top\)</span> 是一个 <span class="math inline">\(b \times d_{in}\)</span> 的矩阵，而 <span class="math inline">\(\frac{\partial L}{\partial Y}\)</span> 是一个 <span class="math inline">\(d_{out} \times b\)</span> 的矩阵。它们的乘积 <span class="math inline">\(\frac{\partial L}{\partial Y} X^\top\)</span> 是一个 <span class="math inline">\(d_{out} \times d_{in}\)</span> 的矩阵。</li>
 <li><strong>范数计算</strong>：<span class="math inline">\(\left\| \cdot \right\|_F^2\)</span> 是将这个 <span class="math inline">\(d_{out} \times d_{in}\)</span> 矩阵的所有元素的平方相加。</li>
 <li><strong>元素尺度</strong>：现在我们来分析矩阵 <span class="math inline">\(\frac{\partial L}{\partial Y} X^\top\)</span> 中单个元素的尺度。它的每个元素都是一个 <span class="math inline">\(b\)</span> 维向量的内积。通常，损失函数 <span class="math inline">\(L\)</span> 是对一个批次（batch）的样本计算得到的平均损失，这意味着计算梯度时已经包含了一个 <span class="math inline">\(\frac{1}{b}\)</span> 的因子。如果我们已经通过恰当的初始化，使得前向的 <span class="math inline">\(X\)</span> 和反向的 <span class="math inline">\(\frac{\partial L}{\partial Y}\)</span> 中每个元素的方差都稳定在 <span class="math inline">\(O(1)\)</span>，那么经过包含 <span class="math inline">\(\frac{1}{b}\)</span> 因子的 <span class="math inline">\(b\)</span> 维内积后，结果矩阵中每个元素的方差也应该是 <span class="math inline">\(O(1)\)</span> 的。</li>
 <li><strong>总和尺度</strong>：基于第3点，<span class="math inline">\(\left\| \frac{\partial L}{\partial Y}X^\top \right\|_F^2\)</span> 是 <span class="math inline">\(d_{out} \times d_{in}\)</span> 个 <span class="math inline">\(O(1)\)</span> 的平方和。因此，其总和的量级为 <span class="math inline">\(O(d_{out} \times d_{in})\)</span>。</li>
