@@ -228,7 +228,7 @@ L_{\text{RLFT}} = -\mathbb{E}_{(x,y) \sim \pi} [R(x, y) \log \pi(y|x)] \approx -
 <p>这里我们暂时忽略了重要性采样、K-L散度约束等复杂项。其中，<span class="math inline">\(\log p\)</span> 与SFT中的对数概率项一致，但它的权重不再是恒定的1，而是<strong>优势函数 (Advantage, A)</strong>。</p>
 <ul>
 <li>当A由一个独立的<strong>Critic模型</strong>（价值模型）计算得出时，算法就演变成了<strong>PPO</strong>的形式。</li>
-<li>当A由蒙特卡洛采样直接估算得出时，例如通过比较当前轨迹的奖励与一批样本的平均奖励，就构成了<strong>GRPO (Good-Replicated Policy Optimization)</strong> 等算法。其优势函数可以表示为：</li>
+<li>当A由蒙特卡洛采样直接估算得出时，例如通过比较当前轨迹的奖励与一批样本的平均奖励，就构成了<strong>GRPO (Group Relative Policy Optimization)</strong> 类算法。其优势函数可以表示为：</li>
 </ul>
 <p><span class="math display">\[
 A(x, y_i) = \frac{r(x, y_i) - \text{mean}\{r(x, y_i)\}_{i=1}^{G}}{\text{std}\{r(x, y_i)\}_{i=1}^{G}}
