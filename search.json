@@ -56,6 +56,20 @@
     "text": "结论与猜想\n综上所述，LLM的强化学习是一个通过奖励信号调整输出概率分布、动态调控模型熵的过程。与旨在“模仿”的SFT不同，RLFT通过正负样本的反馈，教会模型如何在新问题上泛化，避免陷入“背答案”的模式。最新的研究趋势表明，简化RL流程、高效利用高质量样本，并可能跳过SFT直接从Base Model开始优化，是未来值得探索的方向。\n由此，可以带来两个比较直觉的猜想："
   },
   {
+    "objectID": "posts/阅读完最近一些强化学习算法后的深思/index.html#结论补全",
+    "href": "posts/阅读完最近一些强化学习算法后的深思/index.html#结论补全",
+    "title": "Mythos",
+    "section": "结论（补全）",
+    "text": "结论（补全）\n\n主要结论：SFT 更像记忆与风格对齐，会降低局部熵并可能引入“对齐税”；RLFT 通过正负样本调整概率质量、动态调控熵，通常能提升单次命中率（pass@1）并增强泛化，但可能降低输出多样性（pass@k）。\n实践建议：在资源允许时，增加基于 Base 模型的直接 RLFT 对照实验；使用拒绝采样（RFT）作为低成本替代以验证奖励模型的筛选效果；在评估时同时报告 pass@1、pass@k 与熵变化。\n局限与风险：本文的理论分析多基于近似（如独立同分布假设、MC 估计等），缺少大规模实证验证。需关注奖励模型偏差、响应长度内卷与潜在的有害内容放大问题。\n后续工作方向：系统比较 Base→RLFT 与 SFT→RLFT 的差异、设计控制输出长度的奖励或正则化机制、量化负样本对泛化的贡献。"
+  },
+  {
+    "objectID": "posts/阅读完最近一些强化学习算法后的深思/index.html#ppo-与-advantage-的数学推导与伪代码补充",
+    "href": "posts/阅读完最近一些强化学习算法后的深思/index.html#ppo-与-advantage-的数学推导与伪代码补充",
+    "title": "Mythos",
+    "section": "PPO 与 Advantage 的数学推导与伪代码（补充）",
+    "text": "PPO 与 Advantage 的数学推导与伪代码（补充）\n\n\n策略梯度与优势函数（简要）\n\n策略梯度定理（对参数 θ）： \\[\n\\nabla_\\theta J(\\theta) = \\mathbb{E}_{\\tau\\sim\\pi_\\theta}\\left[ \\sum_{t} \\nabla_\\theta \\log \\pi_\\theta(a_t|s_t)\\,A_t \\right]\n\\] 其中 Advantage A_t 可采用回报减基线：(A_t = G_t - V_(s_t))，或使用广义优势估计（GAE）以降低方差。\n\nPPO 的近似目标（剪切型 Surrogate）\n\n\n重要性采样比： \\[\n\\rho_t(\\theta) = \\frac{\\pi_\\theta(a_t|s_t)}{\\pi_{\\theta_\\text{old}}(a_t|s_t)}\n\\]\n\n剪切型代理目标（单步）： \\[\nL^{\\text{clip}}_t(\\theta) = -\\min\\!\\Big( \\rho_t(\\theta) A_t,\\ \\text{clip}(\\rho_t(\\theta),1-\\epsilon,1+\\epsilon) A_t \\Big)\n\\] 总体目标（加上可选熵与 KL 惩罚）： \\[\nL(\\theta) = \\mathbb{E}_t\\big[ L^{\\text{clip}}_t(\\theta) \\big] + c_{KL}\\, \\mathrm{KL}[\\pi_{\\theta_\\text{old}}\\|\\pi_\\theta] - c_{H}\\,\\mathbb{E}_t[H(\\pi_\\theta(\\cdot|s_t))]\n\\]\n\nAdvantage 的常用估计\n\n\n蒙特卡洛回报： \\[\nG_t = \\sum_{k=t}^{T} \\gamma^{k-t} r_k,\\quad A_t = G_t - V_\\phi(s_t)\n\\]\n\n\nGAE（参数 λ）： \\[\n\\delta_t = r_t + \\gamma V_\\phi(s_{t+1}) - V_\\phi(s_t),\\quad\n\\hat A_t^{\\text{GAE}(\\gamma,\\lambda)} = \\sum_{l=0}^{\\infty} (\\gamma\\lambda)^l \\delta_{t+l}\n\\]\n\n\n伪代码（简洁版，适用于 LLM 微调场景）\n\n\nfor iter in range(I):\n    # 1) 收集数据：对当前策略采样若干 prompt，得到多条序列和对应 reward\n    trajectories = collect_trajectories(policy=pi_theta, prompts=Prompts, N=steps)\n    # 2) 计算 Advantage（例如用 GAE 或批内标准化）\n    for traj in trajectories:\n        rewards = traj.rewards\n        values = value_net.predict(traj.states)\n        advantages = compute_gae(rewards, values, gamma, lam)\n    # 3) 构建训练批次（包括 old_log_probs）\n    batch = make_batch(trajectories)\n    # 4) 多步优化策略网络（使用 clip 目标）\n    for epoch in range(K_epochs):\n        for minibatch in iterate_minibatches(batch):\n            # 计算比率 rho = exp(new_logp - old_logp)\n            rho = exp(pi_theta.log_prob(minibatch.actions, minibatch.states) - minibatch.old_logp)\n            loss_clip = -mean( min(rho * minibatch.adv, clip(rho,1-eps,1+eps) * minibatch.adv) )\n            loss_kl = c_kl * KL(pi_old || pi_theta)\n            loss_entropy = -c_h * entropy(pi_theta, minibatch.states)\n            loss = loss_clip + loss_kl + loss_entropy\n            update(policy_net, loss)\n    # 5) 更新价值网络（可多步）\n    update(value_net, mse(value_net(states), returns))\n    # 6) 替换 pi_old &lt;- pi_theta"
+  },
+  {
     "objectID": "posts/关于二元奖励的奖励函数分析/index.html",
     "href": "posts/关于二元奖励的奖励函数分析/index.html",
     "title": "Pass@k 奖励==>隐式奖励",

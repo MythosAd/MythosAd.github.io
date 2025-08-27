@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -253,6 +288,79 @@ A(x, y_i) = \frac{r(x, y_i) - \text{mean}\{r(x, y_i)\}_{i=1}^{G}}{\text{std}\{r(
 <h2 class="anchored" data-anchor-id="结论与猜想">结论与猜想</h2>
 <p>综上所述，LLM的强化学习是一个通过奖励信号调整输出概率分布、动态调控模型熵的过程。与旨在“模仿”的SFT不同，RLFT通过正负样本的反馈，教会模型如何在新问题上泛化，避免陷入“背答案”的模式。最新的研究趋势表明，简化RL流程、高效利用高质量样本，并可能跳过SFT直接从Base Model开始优化，是未来值得探索的方向。</p>
 <p>由此，可以带来两个比较直觉的猜想：</p>
+</section>
+<section id="结论补全" class="level2">
+<h2 class="anchored" data-anchor-id="结论补全">结论（补全）</h2>
+<ul>
+<li>主要结论：SFT 更像记忆与风格对齐，会降低局部熵并可能引入“对齐税”；RLFT 通过正负样本调整概率质量、动态调控熵，通常能提升单次命中率（pass@1）并增强泛化，但可能降低输出多样性（pass@k）。</li>
+<li>实践建议：在资源允许时，增加基于 Base 模型的直接 RLFT 对照实验；使用拒绝采样（RFT）作为低成本替代以验证奖励模型的筛选效果；在评估时同时报告 pass@1、pass@k 与熵变化。</li>
+<li>局限与风险：本文的理论分析多基于近似（如独立同分布假设、MC 估计等），缺少大规模实证验证。需关注奖励模型偏差、响应长度内卷与潜在的有害内容放大问题。</li>
+<li>后续工作方向：系统比较 Base→RLFT 与 SFT→RLFT 的差异、设计控制输出长度的奖励或正则化机制、量化负样本对泛化的贡献。</li>
+</ul>
+</section>
+<section id="ppo-与-advantage-的数学推导与伪代码补充" class="level2">
+<h2 class="anchored" data-anchor-id="ppo-与-advantage-的数学推导与伪代码补充">PPO 与 Advantage 的数学推导与伪代码（补充）</h2>
+<ul>
+<li><ol type="1">
+<li>策略梯度与优势函数（简要）</li>
+</ol></li>
+<li><p>策略梯度定理（对参数 θ）： <span class="math display">\[
+\nabla_\theta J(\theta) = \mathbb{E}_{\tau\sim\pi_\theta}\left[ \sum_{t} \nabla_\theta \log \pi_\theta(a_t|s_t)\,A_t \right]
+\]</span> 其中 Advantage A_t 可采用回报减基线：(A_t = G_t - V_(s_t))，或使用广义优势估计（GAE）以降低方差。</p></li>
+<li><ol start="2" type="1">
+<li>PPO 的近似目标（剪切型 Surrogate）</li>
+</ol></li>
+<li><ul>
+<li>重要性采样比： <span class="math display">\[
+\rho_t(\theta) = \frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_\text{old}}(a_t|s_t)}
+\]</span></li>
+</ul></li>
+<li><p>剪切型代理目标（单步）： <span class="math display">\[
+L^{\text{clip}}_t(\theta) = -\min\!\Big( \rho_t(\theta) A_t,\ \text{clip}(\rho_t(\theta),1-\epsilon,1+\epsilon) A_t \Big)
+\]</span> 总体目标（加上可选熵与 KL 惩罚）： <span class="math display">\[
+L(\theta) = \mathbb{E}_t\big[ L^{\text{clip}}_t(\theta) \big] + c_{KL}\, \mathrm{KL}[\pi_{\theta_\text{old}}\|\pi_\theta] - c_{H}\,\mathbb{E}_t[H(\pi_\theta(\cdot|s_t))]
+\]</span></p></li>
+<li><ol start="3" type="1">
+<li>Advantage 的常用估计</li>
+</ol></li>
+<li><ul>
+<li>蒙特卡洛回报： <span class="math display">\[
+G_t = \sum_{k=t}^{T} \gamma^{k-t} r_k,\quad A_t = G_t - V_\phi(s_t)
+\]</span></li>
+</ul></li>
+<li><ul>
+<li>GAE（参数 λ）： <span class="math display">\[
+\delta_t = r_t + \gamma V_\phi(s_{t+1}) - V_\phi(s_t),\quad
+\hat A_t^{\text{GAE}(\gamma,\lambda)} = \sum_{l=0}^{\infty} (\gamma\lambda)^l \delta_{t+l}
+\]</span></li>
+</ul></li>
+<li><ol start="4" type="1">
+<li>伪代码（简洁版，适用于 LLM 微调场景）</li>
+</ol></li>
+</ul>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="bu">iter</span> <span class="kw">in</span> <span class="bu">range</span>(I):</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 1) 收集数据：对当前策略采样若干 prompt，得到多条序列和对应 reward</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    trajectories <span class="op">=</span> collect_trajectories(policy<span class="op">=</span>pi_theta, prompts<span class="op">=</span>Prompts, N<span class="op">=</span>steps)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 2) 计算 Advantage（例如用 GAE 或批内标准化）</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> traj <span class="kw">in</span> trajectories:</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        rewards <span class="op">=</span> traj.rewards</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>        values <span class="op">=</span> value_net.predict(traj.states)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        advantages <span class="op">=</span> compute_gae(rewards, values, gamma, lam)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 3) 构建训练批次（包括 old_log_probs）</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    batch <span class="op">=</span> make_batch(trajectories)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 4) 多步优化策略网络（使用 clip 目标）</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> epoch <span class="kw">in</span> <span class="bu">range</span>(K_epochs):</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> minibatch <span class="kw">in</span> iterate_minibatches(batch):</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>            <span class="co"># 计算比率 rho = exp(new_logp - old_logp)</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>            rho <span class="op">=</span> exp(pi_theta.log_prob(minibatch.actions, minibatch.states) <span class="op">-</span> minibatch.old_logp)</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>            loss_clip <span class="op">=</span> <span class="op">-</span>mean( <span class="bu">min</span>(rho <span class="op">*</span> minibatch.adv, clip(rho,<span class="dv">1</span><span class="op">-</span>eps,<span class="dv">1</span><span class="op">+</span>eps) <span class="op">*</span> minibatch.adv) )</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>            loss_kl <span class="op">=</span> c_kl <span class="op">*</span> KL(pi_old <span class="op">||</span> pi_theta)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>            loss_entropy <span class="op">=</span> <span class="op">-</span>c_h <span class="op">*</span> entropy(pi_theta, minibatch.states)</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>            loss <span class="op">=</span> loss_clip <span class="op">+</span> loss_kl <span class="op">+</span> loss_entropy</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>            update(policy_net, loss)</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 5) 更新价值网络（可多步）</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    update(value_net, mse(value_net(states), returns))</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 6) 替换 pi_old &lt;- pi_theta</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
 </section>
