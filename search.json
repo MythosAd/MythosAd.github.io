@@ -1,10 +1,10 @@
 [
   {
-    "objectID": "posts/阅读完最近一些强化学习算法后的深思/index.html#categories-paper",
-    "href": "posts/阅读完最近一些强化学习算法后的深思/index.html#categories-paper",
+    "objectID": "posts/阅读完最近一些强化学习算法后的深思/index.html",
+    "href": "posts/阅读完最近一些强化学习算法后的深思/index.html",
     "title": "Mythos",
-    "section": "### categories: [paper]",
-    "text": "### categories: [paper]"
+    "section": "",
+    "text": "title: “LLM强化学习算法思考” author: “杨诚操” date: “2025-08-27” categories: [paper] —"
   },
   {
     "objectID": "posts/阅读完最近一些强化学习算法后的深思/index.html#引言llm中的强化学习与传统rl的区别",
@@ -95,7 +95,7 @@
     "href": "index.html",
     "title": "Mythos",
     "section": "",
-    "text": "title: “LLM强化学习算法思考”\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nμP ，Maximal Update Parametrization介绍\n\n\n\npaper\n\n\n\n\n\n\n\n\n\nAug 25, 2025\n\n\n杨诚操\n\n\n\n\n\n\n\n\n\n\n\n\nPass@k 奖励==&gt;隐式奖励\n\n\n\npaper\n\n\n\n\n\n\n\n\n\nAug 20, 2025\n\n\n杨诚操\n\n\n\n\n\n\n\n\n\n\n\n\n解构与重思：HRM论文背后的Transformer特例、动态优化与泛化边界\n\n\n\npaper\n\n\n\n\n\n\n\n\n\nAug 20, 2025\n\n\n杨诚操\n\n\n\n\n\n\n\n\n\n\n\n\nPass@k 奖励==&gt;隐式奖励\n\n\n\npaper\n\n\n\n\n\n\n\n\n\nAug 20, 2025\n\n\n杨诚操\n\n\n\n\n\n\n\n\n\n\n\n\n深入剖析Deltaformer，探寻超越Transformer的计算新范式\n\n\n\nnews\n\n\n\n\n\n\n\n\n\nAug 17, 2025\n\n\n杨诚操\n\n\n\n\n\n\n\n\n\n\n\n\nTransformer计算能力等价于\\(TC^0\\)\n\n\n\nnews\n\n\n\n\n\n\n\n\n\nAug 17, 2025\n\n\n杨诚操\n\n\n\n\n\n\n\n\n\n\n\n\nLLM推理的“瘦身革命”：少即是多，还是新的枷索？——深入剖析GFPO算法及其数学原理\n\n\n\nnews\n\ncode\n\nanalysis\n\n\n\n\n\n\n\n\n\nAug 15, 2025\n\n\n杨诚操\n\n\n\n\n\n\n\n\n\n\n\n\nPost With Code\n\n\n\nnews\n\ncode\n\nanalysis\n\n\n\n\n\n\n\n\n\nAug 15, 2025\n\n\nHarlow Malloc\n\n\n\n\n\n\n\n\n\n\n\n\n从理论断层到统一框架：LLM强化学习对齐算法深度研究（一）\n\n\n\nnews\n\ncode\n\nanalysis\n\n\n\n\n\n\n\n\n\nAug 15, 2025\n\n\n杨诚操\n\n\n\n\n\nNo matching items"
+    "text": "categories: [paper]\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nμP ，Maximal Update Parametrization介绍\n\n\n\npaper\n\n\n\n\n\n\n\n\n\nAug 25, 2025\n\n\n杨诚操\n\n\n\n\n\n\n\n\n\n\n\n\nPass@k 奖励==&gt;隐式奖励\n\n\n\npaper\n\n\n\n\n\n\n\n\n\nAug 20, 2025\n\n\n杨诚操\n\n\n\n\n\n\n\n\n\n\n\n\n解构与重思：HRM论文背后的Transformer特例、动态优化与泛化边界\n\n\n\npaper\n\n\n\n\n\n\n\n\n\nAug 20, 2025\n\n\n杨诚操\n\n\n\n\n\n\n\n\n\n\n\n\nPass@k 奖励==&gt;隐式奖励\n\n\n\npaper\n\n\n\n\n\n\n\n\n\nAug 20, 2025\n\n\n杨诚操\n\n\n\n\n\n\n\n\n\n\n\n\n深入剖析Deltaformer，探寻超越Transformer的计算新范式\n\n\n\nnews\n\n\n\n\n\n\n\n\n\nAug 17, 2025\n\n\n杨诚操\n\n\n\n\n\n\n\n\n\n\n\n\nTransformer计算能力等价于\\(TC^0\\)\n\n\n\nnews\n\n\n\n\n\n\n\n\n\nAug 17, 2025\n\n\n杨诚操\n\n\n\n\n\n\n\n\n\n\n\n\nLLM推理的“瘦身革命”：少即是多，还是新的枷索？——深入剖析GFPO算法及其数学原理\n\n\n\nnews\n\ncode\n\nanalysis\n\n\n\n\n\n\n\n\n\nAug 15, 2025\n\n\n杨诚操\n\n\n\n\n\n\n\n\n\n\n\n\nPost With Code\n\n\n\nnews\n\ncode\n\nanalysis\n\n\n\n\n\n\n\n\n\nAug 15, 2025\n\n\nHarlow Malloc\n\n\n\n\n\n\n\n\n\n\n\n\n从理论断层到统一框架：LLM强化学习对齐算法深度研究（一）\n\n\n\nnews\n\ncode\n\nanalysis\n\n\n\n\n\n\n\n\n\nAug 15, 2025\n\n\n杨诚操\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "about.html",
