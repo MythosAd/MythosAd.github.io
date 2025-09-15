@@ -2,6 +2,9 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/GSIP/index.html",
+      "/posts/一个可以自我改进的研究行Agent设计/index.html",
+      "/posts/清华求真书院博资考试（AI）/index.html",
       "/posts/阅读完最近一些强化学习算法后的深思/index.html",
       "/posts/μP ，Maximal Update Parametrization介绍/index.html",
       "/posts/Pass@k-reward/index.html",

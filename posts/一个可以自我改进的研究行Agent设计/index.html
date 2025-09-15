@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.33">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="杨诚操">
+<meta name="dcterms.date" content="2025-09-04">
+
+<title>可自我改进的研究Agent设计 – Mythos</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-dfb324f25d9b1687192fa8be62ac8f9c.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Mythos</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://MythosAd.github.io"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">可自我改进的研究Agent设计</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">agent</div>
+                <div class="quarto-category">AGI</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>杨诚操 </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">September 4, 2025</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<section id="引言打破数据墙ai自我进化的新篇章" class="level4">
+<h4 class="anchored" data-anchor-id="引言打破数据墙ai自我进化的新篇章"><strong>引言：打破“数据墙”，AI自我进化的新篇章</strong></h4>
+<p>最近，月之暗面（Kimi）创始人杨植麟的一场采访引发了业界的深思。当被问及为何在推理（Reasoning）和强化学习（RL）之后，选择将工具调用（Tool-use）作为Agent发展的核心赛道时，他的回答揭示了一条通往更强大人工智能的清晰路径。</p>
+<p>他指出，当前AI发展面临着几大瓶颈： 1. <strong>数据墙（Data Wall）的困境</strong>：高质量的训练数据正迅速枯竭，单纯依靠“更多数据”来提升模型性能的路径已难以为继。 2. <strong>数据飞轮的失灵</strong>：传统的通过聊天机器人让用户进行“二选一”的反馈模式，引入了大量噪声。由于模型对这些噪声非常敏感，这种反馈机制难以有效提升模型的核心能力。 3. <strong>多模态训练的代价</strong>：虽然多模态数据的端到端预训练能带来新能力，但有时反而会对模型的核心“脑力”（即逻辑推理能力）造成损害。</p>
+<p>在这样的背景下，唯一有希望持续提升模型能力的路径，或许就是让模型学会与真实世界交互——<strong>即学会调用工具</strong>。通过在一个可控的工具调用环境中，对模型行为进行端到端的强化学习，并设定一个能够优化模型自身能力的学习目标，AI才能真正开启自我进化和改进的循环。</p>
+<p>这个观点的核心思想是：<strong>提出一个宏大的研究课题，然后将这个课题本身抛给AI Agent去解决。</strong> 例如，我们可以要求Agent：“请将模型A的推理能力提升5%。” 这不仅是一个任务，更是一个驱动AI自我迭代的元任务。未来的发展方向，将是构建一个能将大语言模型（LLM）、工具调用和强化学习无缝集成的混合系统。这种系统将不再是简单的工具，而是一个能与人类共同进化、共同解决问题的智能伙伴。</p>
+</section>
+<section id="第一步构建一个实用的研究agent蓝图" class="level4">
+<h4 class="anchored" data-anchor-id="第一步构建一个实用的研究agent蓝图"><strong>第一步：构建一个实用的研究Agent蓝图</strong></h4>
+<p>要实现这一宏伟目标，我们不必等待遥远的未来。第一步可以从借鉴当前最先进的工具和框架开始，搭建一个切实可行的研究Agent原型。</p>
+<p>这个Agent的工作流程可以被设计成一个严谨的、自动化的科学研究循环：</p>
+<ol type="1">
+<li><p><strong>任务分解与规划</strong>：Agent接收一个高阶的研究目标，例如“探索并优化一种新的排序算法”。它首先需要像人类科学家一样，将这个宏大的问题分解为一系列可执行的子任务，并制定详细的研究计划。</p></li>
+<li><p><strong>自动化文献回顾</strong>：Agent启动其“搜索”工具，自动检索arXiv、Google Scholar等学术数据库，寻找相关的论文。它会阅读并总结这些论文，梳理出现有技术（State-of-the-Art）的脉络，并敏锐地识别出其中可以改进的关键点或尚未被探索的领域，从而形成初步的猜想（Hypothesis）。</p></li>
+<li><p><strong>实验设计与代码实现</strong>：针对猜想，Agent需要设计出能够验证其有效性的实验。这正是<strong>Claude Code</strong>这类强大的代码生成工具发挥作用的地方。它可以快速编写出高质量、可执行的实验代码，无论是构建复杂的模拟环境，还是实现精巧的算法。</p></li>
+<li><p><strong>执行与迭代</strong>：借助<strong>Gemini CLI</strong>这样的工具，Agent可以直接在其本地终端环境中执行代码、操作文件、修复BUG，并监控实验结果。如果实验结果验证了猜想，Agent就记录下这一成功经验。如果结果不符合预期，它会分析失败原因，形成新的猜想，然后再次启动这个循环，不知疲倦，直至达成目标。</p></li>
+</ol>
+<p>这个蓝图的理论基础，可以参考一篇名为《<strong>Universal Deep Research: Bring Your Own Model and Strategy</strong>》的论文中所提出的框架。该论文的核心思想是，未来的研究Agent不应被硬编码固定的研究策略，而应提供一个通用的系统，允许使用者（或Agent自身）用自然语言来定义和调整其研究策略，从而实现真正的灵活性和通用性。</p>
+</section>
+<section id="终极混合范式一个自我进化的智能文明" class="level4">
+<h4 class="anchored" data-anchor-id="终极混合范式一个自我进化的智能文明"><strong>终极混合范式：一个自我进化的智能“文明”</strong></h4>
+<p>如果说上述蓝图是一个强大的“个体科学家”，那么终极目标则是构建一个拥有集体智慧、能够涌现出超越人类想象力的研究范式的智能“文明”。我们可以设想一个未来的高级智能系统具备以下特征：</p>
+<ul>
+<li><p><strong>层级化的多智能体协作（Hierarchical Multi-Agent Systems）</strong> 一个复杂而宏大的任务，如“研发一款全新的抗癌药物”或“从零开始构建一个高效的软件企业”，将被交给一个层级化的多智能体团队。在这个“社会”中，有负责顶层战略规划的“<strong>管理者Agent</strong>”，有负责拆解任务、跟踪进度的“<strong>项目经理Agent</strong>”，还有大量负责具体执行的“<strong>专家Agent</strong>”，例如“<strong>理论研究员Agent</strong>”、“<strong>程序员Agent</strong>”和“<strong>数据分析师Agent</strong>”。这种结构实现了任务的有效分解和专业化处理，极大地提升了效率和可扩展性。</p></li>
+<li><p><strong>自我完善的集体记忆（Self-improving Collective Memory）</strong> 系统会自动记录所有成功的协作模式和推理路径，并将其存入一个名为“<strong>经验库（Experience Library）</strong>”的集体记忆中。正如<strong>SiriuS</strong>框架所展示的，这个经验库不仅存储成功案例，还会通过分析失败的轨迹来提炼经验教训，为整个系统的自我完善循环提供源源不断的动力。这种机制类似于多智能体强化学习中的“经验回放”（Experience Replay），但其记录的是更高维度的策略和知识。</p></li>
+<li><p><strong>人机共生的终极回路（Human-in-the-Loop Symbiosis）</strong> 在系统的最高层级，一位人类监督者将与这个智能系统深度互动。他/她不再是微观任务的执行者，而是扮演着“<strong>战略家</strong>”、“<strong>灵感源泉</strong>”和“<strong>伦理守护者</strong>”的角色。人类负责设定终极的战略目标、在关键节点解决模糊性问题、验证最终成果，并在智能体社会陷入僵局时，提供打破常规的创造性指导。人类专家的每一次干预，都将被视为最高价值的数据，记录到经验库中，用以指导系统更长远的进化。</p></li>
+<li><p><strong>从编程协作到涌现协作（From Programmed to Emergent Collaboration）</strong> 当前的多数多智能体系统（MAS）仍需开发者预先定义智能体的角色和交互协议。未来的终极系统将具备自组织能力。智能体能够根据任务的动态需求，自主协商、动态地组建团队、分配角色，甚至在长期协作中演化出专属于它们自己的、更高效率的通信协议和协作文化。这种“<strong>涌现智能</strong>”将使系统能够解决我们今天甚至无法想象的复杂问题。</p></li>
+</ul>
+</section>
+<section id="结语智能的终极形态" class="level4">
+<h4 class="anchored" data-anchor-id="结语智能的终极形态"><strong>结语：智能的终极形态</strong></h4>
+<p>从让单个Agent学会使用工具，到构建一个能够自我进化、与人类共生的智能文明，这条路径不仅是提升模型能力的务实选择，更可能是通往通用人工智能（AGI）的必经之路。</p>
+<ol type="1">
+<li><strong>定义并执行课题</strong>：自主发现有价值的研究方向，并完成所有实验流程。</li>
+<li><strong>撰写并发表论文</strong>：将研究成果系统性地整理成文，并投递给学术期刊。</li>
+<li><strong>启发新的未知</strong>：基于已有的发现，提出更深刻、更前沿的新问题，开启下一轮的探索循环。</li>
+</ol>
+</section>
+<section id="第一部分重新定义一个好的agent" class="level3">
+<h3 class="anchored" data-anchor-id="第一部分重新定义一个好的agent">第一部分：重新定义一个“好”的Agent</h3>
+<p>一个好的研究型Agent应该具备以下<strong>四层核心能力</strong>：</p>
+<ol type="1">
+<li><strong>意图理解与规划（Intent &amp; Planning）</strong>：
+<ul>
+<li><strong>不仅仅是“何时”调用</strong>：当面对一个模糊的目标，如“分析最近关于AI Agent的SOTA研究”，它不应该直接去调用<code>search("AI Agent SOTA")</code>。</li>
+<li><strong>而是“如何”达成目标</strong>：它应该首先将目标分解成一个逻辑清晰的计划（Plan）。例如：“1. 定义‘最近’为过去6个月。2. 搜索arXiv和Google Scholar上关键词为‘AI Agent’, ‘Autonomous Agent’, ’LLM Agent’的论文。3. 对搜索结果按引用数和日期排序。4. 阅读排名前5的论文摘要，总结核心思想。5. 识别出这些论文中共同的技术趋势和挑战。6. 形成一份总结报告。”</li>
+<li><strong>好的Agent的核心是规划能力，而不是反应能力。</strong></li>
+</ul></li>
+<li><strong>工具选择与调用（Tool Selection &amp; Invocation）</strong>：
+<ul>
+<li><strong>精准匹配</strong>：这是你提到的核心。Agent需要阅读并理解工具的“说明书”（docstring或API描述），包括其功能、参数、前提条件和预期的输出格式。</li>
+<li><strong>动态选择</strong>：面对多个可能解决问题的工具，它需要有能力判断哪个是<strong>最高效、最可靠</strong>的。例如，计算一个数字的平方根，是应该调用<code>code_interpreter("import math; print(math.sqrt(16))")</code>还是<code>calculator("sqrt(16)")</code>？后者显然成本更低。</li>
+</ul></li>
+<li><strong>结果观察与反思（Observation &amp; Reflection）</strong>：
+<ul>
+<li><strong>不仅仅是接收结果</strong>：当工具返回一个错误（如<code>APIError: Quota Exceeded</code>）或一个意外的结果（如搜索结果为0），一个“差”的Agent会卡住或直接失败。</li>
+<li><strong>而是理解和归因</strong>：一个“好”的Agent会进行反思：“为什么会失败？是我的参数错了吗？是工具本身不稳定吗？还是我的规划从根本上就有问题？” 这种反思能力是自我改进的基础。</li>
+</ul></li>
+<li><strong>计划修正与迭代（Plan Correction &amp; Iteration）</strong>：
+<ul>
+<li><strong>从失败中学习</strong>：基于反思，Agent必须能够动态地修正它最初的计划。如果搜索不到论文，它可能会修正计划，尝试更换关键词，或者放宽时间限制。如果代码执行失败，它会尝试调试代码，而不是盲目重试。</li>
+</ul></li>
+</ol>
+</section>
+<section id="第二部分工具的多样性为何至关重要" class="level3">
+<h3 class="anchored" data-anchor-id="第二部分工具的多样性为何至关重要">第二部分：工具的多样性为何至关重要？</h3>
+<p>为了构建一个强大的、可泛化到开放世界任务的Agent，其“工具箱”必须是多样化和可扩展的，至少应包括以下几类：</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">工具类别</th>
+<th style="text-align: left;">示例</th>
+<th style="text-align: left;">借鉴 Gemini CLI / Claude Code</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>信息检索</strong></td>
+<td style="text-align: left;"><code>web_search</code>, <code>arxiv_search</code>, <code>database_query</code></td>
+<td style="text-align: left;">这是所有研究Agent的基础能力。</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>代码执行</strong></td>
+<td style="text-align: left;"><code>python_interpreter</code>, <code>bash_terminal</code></td>
+<td style="text-align: left;"><strong>这是Gemini CLI的核心。</strong> 它让Agent拥有了操作本地环境、运行脚本、安装依赖、处理文件的能力，是实现复杂任务的基石。</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>代码生成与修改</strong></td>
+<td style="text-align: left;"><code>code_generator</code>, <code>code_refactor</code></td>
+<td style="text-align: left;"><strong>这是Claude Code的核心。</strong> Agent不仅要能执行代码，更要能根据需求<strong>从零编写代码、调试现有代码、甚至重构代码</strong>以提高效率。</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>长期记忆</strong></td>
+<td style="text-align: left;"><code>memory_write(key, value)</code>, <code>memory_read(key)</code></td>
+<td style="text-align: left;">Agent需要一个地方来存储中间结论、成功的经验和失败的教训。这可以是简单的文件读写，也可以是向量数据库。</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>人机交互</strong></td>
+<td style="text-align: left;"><code>ask_user_for_clarification(question)</code></td>
+<td style="text-align: left;">这是“Human-in-the-loop”的关键。当遇到无法解决的歧义或需要更高层决策时，Agent必须知道要求助人类。</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>复杂数据分析</strong></td>
+<td style="text-align: left;"><code>run_pandas_on_csv</code>, <code>plot_graph</code></td>
+<td style="text-align: left;">处理结构化数据并进行可视化的能力，对于科学研究至关重要。</td>
+</tr>
+</tbody>
+</table>
+<p><strong>结论</strong>：工具的多样性直接决定了Agent能解决的问题领域的广度。一个强大的Agent应该拥有一个“操作系统级”的工具集（如代码执行、文件I/O），这正是Gemini CLI和Claude Code设计的精髓所在。</p>
+</section>
+<section id="第三部分设计一个可自我改进的agent架构" class="level3">
+<h3 class="anchored" data-anchor-id="第三部分设计一个可自我改进的agent架构">第三部分：设计一个可自我改进的Agent架构</h3>
+<p>现在，我们结合上述思考，设计一个具体的架构。</p>
+<section id="核心组件" class="level4">
+<h4 class="anchored" data-anchor-id="核心组件"><strong>核心组件</strong></h4>
+<ol type="1">
+<li><strong>大脑 (The Brain): 核心LLM</strong>
+<ul>
+<li>职责：负责最高层的推理、规划、反思和决策。</li>
+<li>模型要求：必须是具有强大逻辑推理能力、代码理解能力和遵循指令能力的模型（如GPT-4、Claude 3、Gemini 1.5 Pro等）。</li>
+</ul></li>
+<li><strong>工作空间 (The Workspace): 安全执行环境</strong>
+<ul>
+<li>职责：提供一个隔离且持久的环境，供Agent执行代码、读写文件、安装依赖。这本质上是一个<strong>沙箱化的终端</strong>。</li>
+<li>借鉴Gemini CLI：这个工作空间就是Agent的“身体”，它在这里与数字世界交互。所有工具调用，特别是代码和命令执行，都在这里发生。</li>
+</ul></li>
+<li><strong>工具箱 (The Toolbox): 可扩展的工具集</strong>
+<ul>
+<li>职责：提供一系列以API形式封装好的、供“大脑”调用的函数。每个工具都有清晰的描述（docstring），说明其功能、参数和返回。</li>
+<li>设计：工具应该是模块化的，可以轻松添加或移除。</li>
+</ul></li>
+<li><strong>记忆库 (The Memory): 经验存储与检索</strong>
+<ul>
+<li><strong>短期记忆（上下文窗口）</strong>：记录当前任务的对话历史、工具调用序列和观察结果。</li>
+<li><strong>长期记忆（经验库）</strong>：这是一个向量数据库或结构化数据库。它存储着过去任务的成功经验（“plan -&gt; tool_calls -&gt; success_outcome”的完整轨迹）和失败教训（“plan -&gt; tool_calls -&gt; error -&gt; reflection -&gt; corrected_plan”的轨迹）。</li>
+</ul></li>
+</ol>
+</section>
+<section id="自我改进的循环机制-the-self-improvement-loop" class="level4">
+<h4 class="anchored" data-anchor-id="自我改进的循环机制-the-self-improvement-loop"><strong>自我改进的循环机制 (The Self-Improvement Loop)</strong></h4>
+<p>这是整个设计的灵魂。Agent如何利用它的经验来让自己变得更强？</p>
+<p><strong>循环步骤：</strong></p>
+<ol type="1">
+<li><p><strong>规划（Plan）</strong>：当接收到新任务时，<strong>“大脑”首先会查询“记忆库”</strong>。它会问：“我以前是否遇到过类似的任务？” 如果找到相似的成功经验，它会将其作为“思维链”的示例（few-shot example），来构建一个更高质量的初始计划。</p></li>
+<li><p><strong>执行（Execute）</strong>：Agent按照计划，一步步选择工具并执行。所有的【思考 -&gt; 工具调用 -&gt; 观察】三元组都被记录在短期记忆中。</p></li>
+<li><p><strong>评估与反思（Evaluate &amp; Reflect）</strong>：</p>
+<ul>
+<li><strong>成功</strong>：如果任务最终成功（例如，代码运行通过了所有测试，或者用户确认结果满意），整个成功的执行轨迹将被格式化并<strong>存入“长期记忆”</strong>。</li>
+<li><strong>失败</strong>：如果中途出现错误，Agent会触发一个<strong>“反思”模式</strong>。“大脑”会被要求分析整个执行历史，找出失败的根本原因，并提出一个修正后的计划。这个【失败轨迹 -&gt; 反思 -&gt; 修正方案】的宝贵经验，同样会被<strong>存入“长期记忆”</strong>。</li>
+</ul></li>
+<li><p><strong>学习（Learn）</strong>：</p>
+<ul>
+<li><strong>隐式学习（In-context Learning）</strong>：通过第1步中的检索增强生成（RAG），Agent在每次规划时都能即时地从过去的经验中学习，这是最直接的改进方式。</li>
+<li><strong>显式学习（Fine-tuning）</strong>：当“记忆库”积累了足够多的高质量成功轨迹和修正经验后，我们可以定期用这些数据来<strong>微调（Fine-tune）“大脑”LLM</strong>。通过这种方式，Agent的行为模式会从依赖外部记忆，逐渐内化为模型自身的“直觉”，从而在未来面对新问题时，能更快、更准地做出正确的规划和决策。</li>
+</ul></li>
+</ol>
+<p>这个循环将“执行”和“学习”紧密地结合在一起，每一次任务的完成，无论成功与否，都成为了下一次任务的宝贵财富。这，就是通往一个真正可自我改进Agent的路径。</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/MythosAd\.github\.io\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

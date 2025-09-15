@@ -2,15 +2,19 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://MythosAd.github.io/posts/阅读完最近一些强化学习算法后的深思/index.html</loc>
-    <lastmod>2025-08-27T09:04:40.067Z</lastmod>
+    <lastmod>2025-09-04T00:51:16.097Z</lastmod>
   </url>
   <url>
-    <loc>https://MythosAd.github.io/posts/关于二元奖励的奖励函数分析/index.html</loc>
-    <lastmod>2025-08-26T00:44:38.425Z</lastmod>
+    <loc>https://MythosAd.github.io/posts/深入剖析Deltaformer，探寻超越Transformer的计算新范式/index.html</loc>
+    <lastmod>2025-08-17T05:07:37.258Z</lastmod>
   </url>
   <url>
-    <loc>https://MythosAd.github.io/posts/一篇引起注意的HRM/index.html</loc>
-    <lastmod>2025-08-21T03:00:45.927Z</lastmod>
+    <loc>https://MythosAd.github.io/posts/从理论断层到统一框架：LLM强化学习对齐算法深度研究（一）/index.html</loc>
+    <lastmod>2025-08-17T05:15:04.665Z</lastmod>
+  </url>
+  <url>
+    <loc>https://MythosAd.github.io/posts/一个可以自我改进的研究行Agent设计/index.html</loc>
+    <lastmod>2025-09-14T13:36:37.578Z</lastmod>
   </url>
   <url>
     <loc>https://MythosAd.github.io/posts/Transformer计算能力等价于$TC^0$/index.html</loc>
@@ -21,12 +25,16 @@
     <lastmod>2025-08-22T02:49:49.283Z</lastmod>
   </url>
   <url>
-    <loc>https://MythosAd.github.io/index.html</loc>
-    <lastmod>2025-08-14T21:28:35.785Z</lastmod>
+    <loc>https://MythosAd.github.io/posts/GSIP/index.html</loc>
+    <lastmod>2025-09-15T01:57:15.308Z</lastmod>
   </url>
   <url>
     <loc>https://MythosAd.github.io/about.html</loc>
     <lastmod>2025-08-14T21:28:35.813Z</lastmod>
+  </url>
+  <url>
+    <loc>https://MythosAd.github.io/index.html</loc>
+    <lastmod>2025-09-01T08:14:33.982Z</lastmod>
   </url>
   <url>
     <loc>https://MythosAd.github.io/posts/LLM推理的瘦身革命：少即是多，还是新的枷索？深入剖析GFPO算法及其数学原理/index.html</loc>
@@ -41,11 +49,15 @@
     <lastmod>2025-08-27T06:10:38.285Z</lastmod>
   </url>
   <url>
-    <loc>https://MythosAd.github.io/posts/从理论断层到统一框架：LLM强化学习对齐算法深度研究（一）/index.html</loc>
-    <lastmod>2025-08-17T05:15:04.665Z</lastmod>
+    <loc>https://MythosAd.github.io/posts/一篇引起注意的HRM/index.html</loc>
+    <lastmod>2025-08-21T03:00:45.927Z</lastmod>
   </url>
   <url>
-    <loc>https://MythosAd.github.io/posts/深入剖析Deltaformer，探寻超越Transformer的计算新范式/index.html</loc>
-    <lastmod>2025-08-17T05:07:37.258Z</lastmod>
+    <loc>https://MythosAd.github.io/posts/关于二元奖励的奖励函数分析/index.html</loc>
+    <lastmod>2025-08-26T00:44:38.425Z</lastmod>
+  </url>
+  <url>
+    <loc>https://MythosAd.github.io/posts/清华求真书院博资考试（AI）/index.html</loc>
+    <lastmod>2025-09-14T13:36:05.382Z</lastmod>
   </url>
 </urlset>
