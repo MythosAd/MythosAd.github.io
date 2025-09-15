@@ -214,12 +214,6 @@ I(q; r) = H(r) - H(r|q)
 I(r; a) = H(a) - H(a|r)
 \]</span> 其中 <span class="math inline">\(H(a) = -\mathbb{E}_{p(a)}[\log p(a)]\)</span> 是答案的边缘熵，<span class="math inline">\(H(a|r) = \mathbb{E}_{p(r)} [-\mathbb{E}_{p(a|r)}[\log p(a|r)]]\)</span> 是条件熵。</p>
 <p><span class="math inline">\(H(a)\)</span> 是由数据集本身的分布决定的，与我们优化的模型策略 <span class="math inline">\(\pi\)</span> 无关，因此它也是一个常数。最大化 <span class="math inline">\(I(r;a)\)</span> 等价于最小化 <span class="math inline">\(H(a|r)\)</span>，其直观含义是：好的推理链 <span class="math inline">\(r\)</span> 应显著减少关于答案 <span class="math inline">\(a\)</span> 的不确定性。</p>
-<p>为了引入贝叶斯视角，我们显式使用贝叶斯定理重写后验 <span class="math inline">\(p(a|r)\)</span>： <span class="math display">\[
-p(a|r) = \frac{p(r|a) p(a)}{p(r)}
-\]</span> 从而条件熵 <span class="math inline">\(H(a|r)\)</span> 可以重写为： <span class="math display">\[
-H(a|r) = -\mathbb{E}_{p(r,a)} \left[ \log \frac{p(r|a) p(a)}{p(r)} \right] = -\mathbb{E}_{p(r,a)} [\log p(r|a)] - \mathbb{E}_{p(r,a)} [\log p(a)] + \mathbb{E}_{p(r,a)} [\log p(r)]
-\]</span> 这揭示了 <span class="math inline">\(H(a|r)\)</span> 与似然 <span class="math inline">\(p(r|a)\)</span>（给定正确答案时生成 <span class="math inline">\(r\)</span> 的概率）、先验 <span class="math inline">\(p(a)\)</span> 和边缘 <span class="math inline">\(p(r)\)</span> 的关系。在我们的上下文中，最小化 <span class="math inline">\(H(a|r)\)</span> 强调最大化 <span class="math inline">\(\mathbb{E}[\log p(r|a)]\)</span>，即鼓励生成与正确答案高度一致的推理链（类似于最大似然）。</p>
-<p>为了引入贝叶斯视角，我们显式使用贝叶斯定理重写后验 <span class="math inline">\(p(a|r)\)</span>：</p>
 </section>
 <section id="第三步构建-har-的可计算代理" class="level4">
 <h4 class="anchored" data-anchor-id="第三步构建-har-的可计算代理"><strong>第三步：构建 <span class="math inline">\(H(a|r)\)</span> 的可计算代理</strong></h4>
@@ -240,6 +234,17 @@ H(a|r) \leq - \mathbb{E}_{r,a}[\log \pi_\theta(a|r)].
 \]</span></p>
 <p>具体而言，我们用交叉熵 (CE) 作为 <span class="math inline">\(H(a|r)\)</span> 的变分上界（因为 <span class="math inline">\(CE = H + KL \geq H\)</span>，且 <span class="math inline">\(KL \geq 0）\)</span> ：</p>
 <p><span class="math display">\[
+\begin{align*}
+CE(p, \pi_\theta)
+&amp; \equiv -\sum_a p(a|r) \log \pi_\theta(a|r) \\
+&amp; = -\sum_a p(a|r) \log \pi_\theta(a|r) + \sum_a p(a|r) \log p(a|r) - \sum_a p(a|r) \log p(a|r) \\
+&amp; = \left( -\sum_a p(a|r) \log p(a|r) \right) + \left( \sum_a p(a|r) \log p(a|r) - \sum_a p(a|r) \log \pi_\theta(a|r) \right) \\
+&amp; = H(a|r) + \sum_a p(a|r) \left( \log p(a|r) - \log \pi_\theta(a|r) \right) \\
+&amp; = H(a|r) + \sum_a p(a|r) \log \frac{p(a|r)}{\pi_\theta(a|r)} \\
+&amp; = H(a|r) + D_{KL}(p(a|r) || \pi_\theta(a|r)) \\
+&amp; \ge H(a|r)
+\end{align*}
+\]</span> 因此可以得到 <span class="math display">\[
 H(a|r) \leq -\mathbb{E}_{r \sim \pi_\theta(\cdot|q), a \sim p(\cdot|q)} [\log \pi_\theta(a|r)]
 \]</span> 因此，最小化 <span class="math inline">\(H(a|r)\)</span> 可以近似为最小化这个上界： <span class="math display">\[
 \min_{\pi_\theta} H(a|r) \approx \min_{\pi_\theta} \left( -\mathbb{E}_{r \sim \pi_\theta(\cdot|q), a \sim p(\cdot|q)}[\log \pi_\theta(a|r)] \right)
@@ -293,7 +298,7 @@ H(a|r) \leq -\mathbb{E}_{r \sim \pi_\theta(\cdot|q), a \sim p(\cdot|q)} [\log \p
 <li><strong>指数衰减</strong>: <span class="math inline">\(\gamma(t) = \gamma_0^t\)</span>，其中 <span class="math inline">\(0 &lt; \gamma_0 &lt; 1\)</span> 是衰减率。</li>
 <li><strong>分段函数</strong>: 在推理的前 <span class="math inline">\(k\)</span> 步 <span class="math inline">\(\gamma(t)=1\)</span>，之后 <span class="math inline">\(\gamma(t)\)</span> 开始衰减。</li>
 </ul>
-<p><code>markdown</code>bibtex <span class="citation" data-cites="article">@article</span>{he2025nondeterminism, author = {ChengCao Yang}, title = {GIPO: group information policy optimizer for large language model}, year = {2025}, note = {https://mythosad.github.io/posts/GSIP/}, }</p>
+<p>```bib <span class="citation" data-cites="article">@article</span>{he2025nondeterminism, author = {ChengCao Yang}, title = {GIPO: group information policy optimizer for large language model}, year = {2025}, note = {https://mythosad.github.io/posts/GSIP/}, }</p>
 
 
 </section>
