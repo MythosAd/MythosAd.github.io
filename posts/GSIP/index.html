@@ -9,7 +9,7 @@
 <meta name="author" content="杨诚操">
 <meta name="dcterms.date" content="2025-09-04">
 
-<title>GSIB推导 – Mythos</title>
+<title>GIPO: group information policy optimizer for large language model – Mythos</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -145,7 +145,7 @@ window.Quarto = {
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">GSIB推导</h1>
+      <h1 class="title">GIPO: group information policy optimizer for large language model</h1>
                                 <div class="quarto-categories">
                 <div class="quarto-category">agent</div>
                 <div class="quarto-category">AGI</div>
@@ -192,34 +192,34 @@ window.Quarto = {
 <p>我们的理论起点是信息瓶颈（Information Bottleneck, IB）原理。该原理旨在寻找一个信息瓶颈变量 <span class="math inline">\(r\)</span>（在我们的场景中是LLM生成的推理链），它在压缩输入 <span class="math inline">\(q\)</span>（问题）的同时，最大化地保留与目标 <span class="math inline">\(a\)</span>（答案）相关的信息。</p>
 <p>这被形式化为以下优化目标： <span class="math display">\[
 \min_{\pi(r|q)} \mathcal{L}_{IB}(\pi) = I(q; r) - \beta I(r; a)
-\]</span> 其中，((r|q)) 是模型生成推理链的策略，(&gt; 0) 是权衡参数（较大 () 鼓励更多压缩）。互信息 (I(;)) 基于联合分布 (p(q,r,a))，其中 (r (r|q))，(a p(a|q))。我们的任务是找到一个最优策略 (^*) 来最大化此目标。</p>
+\]</span> 其中，<span class="math inline">\((\pi(r|q)\)</span> 是模型生成推理链的策略，<span class="math inline">\(\beta &gt; 0\)</span> 是权衡参数（较大 <span class="math inline">\(\beta\)</span> 鼓励更多压缩）。互信息 <span class="math inline">\(I(\cdot;\cdot)\)</span> 基于联合分布 <span class="math inline">\(p(q,r,a)\)</span>，其中 <span class="math inline">\(r \sim \pi(r|q)\)</span>，<span class="math inline">\(a \sim p(a|q)\)</span>。我们的任务是找到一个最优策略 <span class="math inline">\(\pi^*\)</span> 来最大化此目标。</p>
 </section>
 <section id="推导步骤从互信息到可操作的代理目标" class="level3">
 <h3 class="anchored" data-anchor-id="推导步骤从互信息到可操作的代理目标">2. 推导步骤：从互信息到可操作的代理目标</h3>
-<p>我们将对 <span class="math inline">\(\mathcal{L}_{IB}\)</span> 的两个组成部分——信息项 <span class="math inline">\(\(I(r;a)\)\)</span> 和压缩项 <span class="math inline">\(\(I(q;r)\)\)</span>——分别进行分解和近似。</p>
+<p>我们将对 <span class="math inline">\(\mathcal{L}_{IB}\)</span> 的两个组成部分——信息项 <span class="math display">\[I(r;a)\]</span> 和压缩项 <span class="math display">\[I(q;r)\]</span>——分别进行分解和近似。</p>
 <section id="第一步处理压缩项-iqr" class="level4">
 <h4 class="anchored" data-anchor-id="第一步处理压缩项-iqr"><strong>第一步：处理压缩项 <span class="math inline">\(I(q;r)\)</span></strong></h4>
 <p>根据互信息的定义，我们有： <span class="math display">\[
 I(q; r) = H(r) - H(r|q)
-\]</span> 其中 $H(r) = -<em>{p(r)}[p(r)]$ 是推理链 <span class="math inline">\(r\)</span> 的先验熵，$H(r|q) = </em>{p(q)} [-_{(r|q)}[(r|q)]] $ 是在给定问题 <span class="math inline">\(q\)</span> 的条件下 <span class="math inline">\(r\)</span> 的条件熵。</p>
+\]</span> 其中 <span class="math inline">\(H(r) = -\mathbb{E}_{p(r)}[\log p(r)]\)</span> 是推理链 <span class="math inline">\(r\)</span> 的先验熵，<span class="math inline">\(H(r|q) = \mathbb{E}_{p(q)} [-\mathbb{E}_{\pi(r|q)}[\log \pi(r|q)]]\)</span> 是在给定问题 <span class="math inline">\(q\)</span> 的条件下 <span class="math inline">\(r\)</span> 的条件熵。</p>
 <p>我们引入一个关键的实践假设：</p>
-<p><strong>假设 1</strong>: 在强化学习微调的有限范围内，模型生成文本的整体边缘分布 (p(r) = _{p(q)} (r|q)) 相对稳定，从而 (H(r)) 可以被视为一个与策略 () 的优化无关的近似常数。</p>
-<p>这一项的目标是最大化条件熵 <span class="math inline">\(H(r|q)\)</span>，它鼓励模型在给定问题时生成更多样化的推理路径，从而促进探索并提高泛化能力。 这是一个变分近似（类似于变分自编码器中的边缘KL近似），但需注意其局限性：如果优化显著改变 ((r|q))（例如，从随机到高度确定性），(H(r)) 可能发生变化，导致轻微偏差。因此，最小化 (I(q;r)) 的目标在优化过程中近似等价于： <span class="math display">\[
+<p><strong>假设 1</strong>: 在强化学习微调的有限范围内，模型生成文本的整体边缘分布 <span class="math inline">\(p(r) = \mathbb{E}_{p(q)} \pi(r|q)\)</span> 相对稳定，从而 <span class="math inline">\(H(r)\)</span> 可以被视为一个与策略 <span class="math inline">\(\pi\)</span> 的优化无关的近似常数。</p>
+<p>这一项的目标是最大化条件熵 <span class="math inline">\(H(r|q)\)</span>，它鼓励模型在给定问题时生成更多样化的推理路径，从而促进探索并提高泛化能力。 这是一个变分近似（类似于变分自编码器中的边缘KL近似），但需注意其局限性：如果优化显著改变 <span class="math inline">\(\pi(r|q)\)</span>（例如，从随机到高度确定性），<span class="math inline">\(H(r)\)</span> 可能发生变化，导致轻微偏差。因此，最小化 <span class="math inline">\(I(q;r)\)</span> 的目标在优化过程中近似等价于： <span class="math display">\[
 \min_{\pi} I(q;r) \approx \min_{\pi} [H(r) - H(r|q)] \iff \max_{\pi} H(r|q)
-\]</span> 这一项鼓励最大化条件熵 (H(r|q))，促进模型在给定问题时生成多样化的推理路径，从而提升探索和泛化能力。在高维序列空间中，(H(r|q)) 通常通过采样或PPO-style的熵计算来近似。</p>
+\]</span> 这一项鼓励最大化条件熵 <span class="math inline">\(H(r|q)\)</span>，促进模型在给定问题时生成多样化的推理路径，从而提升探索和泛化能力。在高维序列空间中，<span class="math inline">\(H(r|q)\)</span> 通常通过采样或PPO-style的熵计算来近似。</p>
 </section>
 <section id="第二步处理信息项-ira" class="level4">
 <h4 class="anchored" data-anchor-id="第二步处理信息项-ira"><strong>第二步：处理信息项 <span class="math inline">\(I(r;a)\)</span></strong></h4>
 <p>这是本次推导的核心所在。我们同样从互信息的定义出发： <span class="math display">\[
 I(r; a) = H(a) - H(a|r)
-\]</span> 其中 (H(a) = -<em>{p(a)}[p(a)]) 是答案的边缘熵，(H(a|r) = </em>{p(r)} [-_{p(a|r)}[p(a|r)]]) 是条件熵。</p>
-<p><span class="math inline">\(H(a)\)</span> 是由数据集本身的分布决定的，与我们优化的模型策略 <span class="math inline">\(\pi\)</span> 无关，因此它也是一个常数。最大化 (I(r;a)) 等价于最小化 (H(a|r))，其直观含义是：好的推理链 (r) 应显著减少关于答案 (a) 的不确定性。</p>
-<p>为了引入贝叶斯视角，我们显式使用贝叶斯定理重写后验 (p(a|r))： <span class="math display">\[
+\]</span> 其中 <span class="math inline">\(H(a) = -\mathbb{E}_{p(a)}[\log p(a)]\)</span> 是答案的边缘熵，<span class="math inline">\(H(a|r) = \mathbb{E}_{p(r)} [-\mathbb{E}_{p(a|r)}[\log p(a|r)]]\)</span> 是条件熵。</p>
+<p><span class="math inline">\(H(a)\)</span> 是由数据集本身的分布决定的，与我们优化的模型策略 <span class="math inline">\(\pi\)</span> 无关，因此它也是一个常数。最大化 <span class="math inline">\(I(r;a)\)</span> 等价于最小化 <span class="math inline">\(H(a|r)\)</span>，其直观含义是：好的推理链 <span class="math inline">\(r\)</span> 应显著减少关于答案 <span class="math inline">\(a\)</span> 的不确定性。</p>
+<p>为了引入贝叶斯视角，我们显式使用贝叶斯定理重写后验 <span class="math inline">\(p(a|r)\)</span>： <span class="math display">\[
 p(a|r) = \frac{p(r|a) p(a)}{p(r)}
-\]</span> 从而条件熵 (H(a|r)) 可以重写为： <span class="math display">\[
+\]</span> 从而条件熵 <span class="math inline">\(H(a|r)\)</span> 可以重写为： <span class="math display">\[
 H(a|r) = -\mathbb{E}_{p(r,a)} \left[ \log \frac{p(r|a) p(a)}{p(r)} \right] = -\mathbb{E}_{p(r,a)} [\log p(r|a)] - \mathbb{E}_{p(r,a)} [\log p(a)] + \mathbb{E}_{p(r,a)} [\log p(r)]
-\]</span> 这揭示了 (H(a|r)) 与似然 (p(r|a))（给定正确答案时生成 (r) 的概率）、先验 (p(a)) 和边缘 (p(r)) 的关系。在我们的上下文中，最小化 (H(a|r)) 强调最大化 ([p(r|a)])，即鼓励生成与正确答案高度一致的推理链（类似于最大似然）。</p>
-<p>为了引入贝叶斯视角，我们显式使用贝叶斯定理重写后验 (p(a|r))：</p>
+\]</span> 这揭示了 <span class="math inline">\(H(a|r)\)</span> 与似然 <span class="math inline">\(p(r|a)\)</span>（给定正确答案时生成 <span class="math inline">\(r\)</span> 的概率）、先验 <span class="math inline">\(p(a)\)</span> 和边缘 <span class="math inline">\(p(r)\)</span> 的关系。在我们的上下文中，最小化 <span class="math inline">\(H(a|r)\)</span> 强调最大化 <span class="math inline">\(\mathbb{E}[\log p(r|a)]\)</span>，即鼓励生成与正确答案高度一致的推理链（类似于最大似然）。</p>
+<p>为了引入贝叶斯视角，我们显式使用贝叶斯定理重写后验 <span class="math inline">\(p(a|r)\)</span>：</p>
 </section>
 <section id="第三步构建-har-的可计算代理" class="level4">
 <h4 class="anchored" data-anchor-id="第三步构建-har-的可计算代理"><strong>第三步：构建 <span class="math inline">\(H(a|r)\)</span> 的可计算代理</strong></h4>
@@ -238,12 +238,12 @@ p(a|r) = \frac{p(r|a)p(a)}{p(r)}.
 <p>为了构建一个可操作的代理目标，我们使用模型 <span class="math inline">\(\pi_\theta\)</span> 自身来近似 <span class="math inline">\(p(a|r)\)</span>。并引入交叉熵作为上界（变分上界）：具体来说，我们假设模型在生成推理链 <span class="math inline">\(r\)</span> 之后，具备预测最终答案 <span class="math inline">\(a\)</span> 的能力，这个预测分布我们记为 <span class="math inline">\(\pi_\theta(a|r)\)</span>。 <span class="math display">\[
 H(a|r) \leq - \mathbb{E}_{r,a}[\log \pi_\theta(a|r)].
 \]</span></p>
-<p>具体而言，我们用交叉熵 (CE) 作为 (H(a|r)) 的变分上界（因为 <span class="math inline">\(CE = H + KL \geq H\)</span>，且 <span class="math inline">\(KL \geq 0）\)</span> ：</p>
+<p>具体而言，我们用交叉熵 (CE) 作为 <span class="math inline">\(H(a|r)\)</span> 的变分上界（因为 <span class="math inline">\(CE = H + KL \geq H\)</span>，且 <span class="math inline">\(KL \geq 0）\)</span> ：</p>
 <p><span class="math display">\[
 H(a|r) \leq -\mathbb{E}_{r \sim \pi_\theta(\cdot|q), a \sim p(\cdot|q)} [\log \pi_\theta(a|r)]
-\]</span> 因此，最小化 (H(a|r)) 可以近似为最小化这个上界： <span class="math display">\[
+\]</span> 因此，最小化 <span class="math inline">\(H(a|r)\)</span> 可以近似为最小化这个上界： <span class="math display">\[
 \min_{\pi_\theta} H(a|r) \approx \min_{\pi_\theta} \left( -\mathbb{E}_{r \sim \pi_\theta(\cdot|q), a \sim p(\cdot|q)}[\log \pi_\theta(a|r)] \right)
-\]</span> 这个代理目标直观：它要求生成的 (r) 让模型以高置信度预测正确答案。该近似假设 (_(a|r) p(a|r))，KL散度在迭代优化中趋于零；否则，可能引入偏差，但这在实践中通过自我一致性训练缓解。注意，期望采样假设 (a) 给定 (q) 独立于 (r)，但因果链 (q r a) 通过贝叶斯反演隐式处理。</p>
+\]</span> 这个代理目标直观：它要求生成的 <span class="math inline">\(r\)</span> 让模型以高置信度预测正确答案。该近似假设 <span class="math inline">\(\pi_\theta(a|r) \approx p(a|r)\)</span>，KL散度在迭代优化中趋于零；否则，可能引入偏差，但这在实践中通过自我一致性训练缓解。注意，期望采样假设 <span class="math inline">\(a\)</span> 给定 <span class="math inline">\(q\)</span> 独立于 <span class="math inline">\(r\)</span>，但因果链 <span class="math inline">\(q \to r \to a\)</span> 通过贝叶斯反演隐式处理。</p>
 </section>
 <section id="第四步组合成最终的代理目标" class="level4">
 <h4 class="anchored" data-anchor-id="第四步组合成最终的代理目标"><strong>第四步：组合成最终的代理目标</strong></h4>
@@ -293,6 +293,7 @@ H(a|r) \leq -\mathbb{E}_{r \sim \pi_\theta(\cdot|q), a \sim p(\cdot|q)} [\log \p
 <li><strong>指数衰减</strong>: <span class="math inline">\(\gamma(t) = \gamma_0^t\)</span>，其中 <span class="math inline">\(0 &lt; \gamma_0 &lt; 1\)</span> 是衰减率。</li>
 <li><strong>分段函数</strong>: 在推理的前 <span class="math inline">\(k\)</span> 步 <span class="math inline">\(\gamma(t)=1\)</span>，之后 <span class="math inline">\(\gamma(t)\)</span> 开始衰减。</li>
 </ul>
+<p><code>markdown</code>bibtex <span class="citation" data-cites="article">@article</span>{he2025nondeterminism, author = {ChengCao Yang}, title = {GIPO: group information policy optimizer for large language model}, year = {2025}, note = {https://mythosad.github.io/posts/GSIP/}, }</p>
 
 
 </section>
