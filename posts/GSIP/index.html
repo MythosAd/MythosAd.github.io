@@ -9,7 +9,7 @@
 <meta name="author" content="杨诚操">
 <meta name="dcterms.date" content="2025-09-04">
 
-<title>GIPO: group information policy optimizer for large language model – Mythos</title>
+<title>GIPO: Group Information Policy Optimization for large language model – Mythos</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -145,7 +145,7 @@ window.Quarto = {
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">GIPO: group information policy optimizer for large language model</h1>
+      <h1 class="title">GIPO: Group Information Policy Optimization for large language model</h1>
                                 <div class="quarto-categories">
                 <div class="quarto-category">agent</div>
                 <div class="quarto-category">AGI</div>
@@ -185,8 +185,8 @@ window.Quarto = {
 
 
 
-<section id="基于贝叶斯代理的ibro框架推导" class="level2">
-<h2 class="anchored" data-anchor-id="基于贝叶斯代理的ibro框架推导">基于贝叶斯代理的IBRO框架推导</h2>
+<section id="基于贝叶斯代理的gipo框架推导" class="level2">
+<h2 class="anchored" data-anchor-id="基于贝叶斯代理的gipo框架推导">基于贝叶斯代理的GIPO框架推导</h2>
 <section id="起点信息瓶颈ib原理" class="level3">
 <h3 class="anchored" data-anchor-id="起点信息瓶颈ib原理">1. 起点：信息瓶颈（IB）原理</h3>
 <p>我们的理论起点是信息瓶颈（Information Bottleneck, IB）原理。该原理旨在寻找一个信息瓶颈变量 <span class="math inline">\(r\)</span>（在我们的场景中是LLM生成的推理链），它在压缩输入 <span class="math inline">\(q\)</span>（问题）的同时，最大化地保留与目标 <span class="math inline">\(a\)</span>（答案）相关的信息。</p>
@@ -253,10 +253,10 @@ H(a|r) \leq -\mathbb{E}_{r \sim \pi_\theta(\cdot|q), a \sim p(\cdot|q)} [\log \p
 <section id="第四步组合成最终的代理目标" class="level4">
 <h4 class="anchored" data-anchor-id="第四步组合成最终的代理目标"><strong>第四步：组合成最终的代理目标</strong></h4>
 <p>现在，我们将处理过的压缩项和信息项代回到原始的IB目标中。 <span class="math display">\[
-\min_{\pi_\theta} \mathcal{L}_{IBRO}(\pi_\theta) = \min_{\pi_\theta} [I(q;r) - \beta I(r;a)]
+\min_{\pi_\theta} \mathcal{L}_{GIPO}(\pi_\theta) = \min_{\pi_\theta} [I(q;r) - \beta I(r;a)]
 \]</span> 忽略优化过程中的常数项 <span class="math inline">\(H(r)\)</span> 和 <span class="math inline">\(H(a)\)</span>，我们得到： <span class="math display">\[
 \min_{\pi_\theta} [-H(r|q) - \beta(-H(a|r))] = \min_{\pi_\theta} [-H(r|q) + \beta H(a|r)]
-\]</span> 最后，将 <span class="math inline">\(H(a|r)\)</span> 替换为其可计算的交叉熵代理，我们得到最终的、基于贝叶斯代理的IBRO优化目标： <span class="math display">\[
+\]</span> 最后，将 <span class="math inline">\(H(a|r)\)</span> 替换为其可计算的交叉熵代理，我们得到最终的、基于贝叶斯代理的GIPO优化目标： <span class="math display">\[
 \mathcal{J}_{alt}(\pi_\theta) = \max_{\pi_\theta} \left( \mathbb{E}_{r \sim \pi_\theta(\cdot|q), a \sim p(\cdot|q)} [\log \pi_\theta(a|r)] + \beta H(r|q) \right)
 \]</span></p>
 </section>
@@ -304,7 +304,7 @@ H(a|r) \leq -\mathbb{E}_{r \sim \pi_\theta(\cdot|q), a \sim p(\cdot|q)} [\log \p
 <h2 class="anchored" data-anchor-id="citation">Citation</h2>
 <pre><code>@article{he2025nondeterminism,
   author = {ChengCao Yang},
-  title = {GIPO: group information policy optimizer for large language model},
+  title = {GIPO: Group Information Policy Optimization for large language model},
   year = {2025},
   note = {https://mythosad.github.io/posts/GSIP/},
 }</code></pre>
