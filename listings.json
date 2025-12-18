@@ -2,6 +2,8 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/GSIP/思考.html",
+      "/posts/GSIP + ReAct + Context Manager/index.html",
       "/posts/大模型强化学习的几何优化偏置/index.html",
       "/posts/GSIP/index.html",
       "/posts/一个可以自我改进的研究行Agent设计/index.html",
